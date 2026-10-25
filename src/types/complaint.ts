@@ -97,9 +97,19 @@ export interface ComplaintFilters {
   category?: ComplaintCategory | 'All';
 }
 
+export interface StaffComplaintFilters {
+  search?: string;
+  status?: ComplaintStatus | 'All';
+  category?: ComplaintCategory | 'All';
+  priority?: ComplaintPriority | 'All';
+  technicianName?: string | 'All';
+  hostelName?: string | 'All';
+}
+
 export interface IComplaintService {
   getOverviewStats(studentId?: string, hostelName?: string): Promise<ComplaintOverviewStats>;
   getMyComplaints(studentId: string, filters?: ComplaintFilters): Promise<Complaint[]>;
+  getStaffComplaints(actorRole: string, actorName: string, actorHostel?: string, filters?: StaffComplaintFilters): Promise<Complaint[]>;
   getComplaintById(complaintId: string): Promise<Complaint | null>;
   getComplaintByReference(referenceId: string): Promise<Complaint | null>;
   createComplaint(studentId: string, studentName: string, input: CreateComplaintInput): Promise<Complaint>;
@@ -108,4 +118,15 @@ export interface IComplaintService {
   addComment(complaintId: string, authorId: string, authorName: string, authorRole: string, content: string): Promise<CommunityComment>;
   reportUnresolved(complaintId: string, studentId: string, reason?: string): Promise<{ success: boolean; unresolvedCount: number; message: string }>;
   requestReopen(complaintId: string, studentId: string, reason: string): Promise<Complaint>;
+
+  // Role-Enforced Staff Transitions
+  acknowledgeComplaint(complaintId: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  assignTechnician(complaintId: string, technicianName: string, notes: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  startWork(complaintId: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  markWorkCompleted(complaintId: string, repairNotes: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  confirmResolution(complaintId: string, resolutionRemarks: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  rejectComplaint(complaintId: string, mandatoryReason: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  approveReopen(complaintId: string, technicianName: string | undefined, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  reprioritizeComplaint(complaintId: string, newPriority: ComplaintPriority, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  escalateComplaint(complaintId: string, escalationNotes: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
 }

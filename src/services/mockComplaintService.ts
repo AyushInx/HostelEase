@@ -1,11 +1,14 @@
 import type {
   Complaint,
   ComplaintFilters,
+  StaffComplaintFilters,
   ComplaintOverviewStats,
+  ComplaintPriority,
   CreateComplaintInput,
   CommunityComment,
   IComplaintService,
 } from '../types/complaint';
+import { staffAdminService } from './mockStaffAdminService';
 
 /**
  * =========================================================================
@@ -640,6 +643,444 @@ class MockComplaintService implements IComplaintService {
     target.updatedAt = timestamp;
     this.saveToStorage();
 
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async getStaffComplaints(
+    actorRole: string,
+    actorName: string,
+    actorHostel?: string,
+    filters?: StaffComplaintFilters
+  ): Promise<Complaint[]> {
+    await this.delay(150);
+    this.loadFromStorage();
+
+    let list = [...this.complaints];
+
+    // Scoping per role:
+    if (actorRole === 'Technician') {
+      // View assigned work only
+      const techKeyword = actorName.split(' ')[0].toLowerCase();
+      list = list.filter(
+        (c) =>
+          c.assignedTechnicianName &&
+          (c.assignedTechnicianName.toLowerCase().includes(techKeyword) ||
+            c.assignedTechnicianName === actorName)
+      );
+    } else if (actorRole === 'Caretaker' || actorRole === 'Warden') {
+      // Scoped to designated hostel
+      if (actorHostel) {
+        list = list.filter((c) => c.hostelName === actorHostel);
+      }
+    }
+    // Hostel Admin has cross-hostel view
+
+    // Apply Filters:
+    if (filters) {
+      if (filters.search && filters.search.trim()) {
+        const q = filters.search.trim().toLowerCase();
+        list = list.filter(
+          (c) =>
+            c.referenceId.toLowerCase().includes(q) ||
+            c.title.toLowerCase().includes(q) ||
+            c.description.toLowerCase().includes(q) ||
+            c.roomNumber.toLowerCase().includes(q) ||
+            c.studentName.toLowerCase().includes(q)
+        );
+      }
+
+      if (filters.status && filters.status !== 'All') {
+        list = list.filter((c) => c.status === filters.status);
+      }
+
+      if (filters.category && filters.category !== 'All') {
+        list = list.filter((c) => c.category === filters.category);
+      }
+
+      if (filters.priority && filters.priority !== 'All') {
+        list = list.filter((c) => c.priority === filters.priority);
+      }
+
+      if (filters.technicianName && filters.technicianName !== 'All') {
+        list = list.filter((c) => c.assignedTechnicianName === filters.technicianName);
+      }
+
+      if (filters.hostelName && filters.hostelName !== 'All') {
+        list = list.filter((c) => c.hostelName === filters.hostelName);
+      }
+    }
+
+    return list.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  async acknowledgeComplaint(
+    complaintId: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(200);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    const prev = target.status;
+    target.status = 'Seen';
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'Seen',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: 'Ticket acknowledged by Caretaker',
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'TICKET_ACKNOWLEDGE',
+      'Complaint',
+      target.referenceId,
+      `Status changed: ${prev} -> Seen`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async assignTechnician(
+    complaintId: string,
+    technicianName: string,
+    notes: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(200);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    const prev = target.status;
+    target.assignedTechnicianName = technicianName;
+    target.status = 'Assigned';
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'Assigned',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: notes ? `Assigned to ${technicianName}: ${notes}` : `Assigned to ${technicianName}`,
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'ASSIGN_TECHNICIAN',
+      'Complaint',
+      target.referenceId,
+      `Assigned to ${technicianName}. Notes: ${notes || 'None'}`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async startWork(
+    complaintId: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(200);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    const prev = target.status;
+    target.status = 'In Progress';
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'In Progress',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: 'Technician arrived on site and commenced repairs',
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'START_WORK',
+      'Complaint',
+      target.referenceId,
+      `Technician ${actorName} commenced repair. Status: In Progress`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async markWorkCompleted(
+    complaintId: string,
+    repairNotes: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(200);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    const prev = target.status;
+    target.status = 'Work Completed';
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'Work Completed',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: `Work completed by technician: ${repairNotes.trim()}`,
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'WORK_COMPLETED',
+      'Complaint',
+      target.referenceId,
+      `Technician ${actorName} completed work. Notes: ${repairNotes}`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async confirmResolution(
+    complaintId: string,
+    resolutionRemarks: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(250);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    const prev = target.status;
+    target.status = 'Resolved';
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'Resolved',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: resolutionRemarks
+        ? `Confirmed resolution: ${resolutionRemarks.trim()}`
+        : 'Work verified and marked resolved by Warden',
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'CONFIRM_RESOLUTION',
+      'Complaint',
+      target.referenceId,
+      `Warden ${actorName} confirmed resolution. Remarks: ${resolutionRemarks || 'None'}`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async rejectComplaint(
+    complaintId: string,
+    mandatoryReason: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(200);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    if (!mandatoryReason || mandatoryReason.trim().length < 5) {
+      throw new Error('Mandatory reason is required to reject a complaint');
+    }
+
+    const prev = target.status;
+    target.status = 'Rejected';
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'Rejected',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: `Ticket rejected: ${mandatoryReason.trim()}`,
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'REJECT_COMPLAINT',
+      'Complaint',
+      target.referenceId,
+      `Rejected by ${actorRole} (${actorName}). Reason: ${mandatoryReason.trim()}`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async approveReopen(
+    complaintId: string,
+    technicianName: string | undefined,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(250);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    const prev = target.status;
+    // SPEC INVARIANT: Reopened returns to Assigned (same technician if still active, else Caretaker reassigns)
+    target.status = 'Assigned';
+    if (technicianName) {
+      target.assignedTechnicianName = technicianName;
+    }
+    if (target.reopenRequest) {
+      target.reopenRequest.status = 'approved';
+    }
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'Assigned',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: `Reopen request approved by ${actorRole}. Returned to Assigned status under ${target.assignedTechnicianName || 'unassigned'}.`,
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'APPROVE_REOPEN',
+      'Complaint',
+      target.referenceId,
+      `Approved reopen request. Returned to Assigned (${target.assignedTechnicianName || 'unassigned'})`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async reprioritizeComplaint(
+    complaintId: string,
+    newPriority: ComplaintPriority,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(150);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    const prevPriority = target.priority;
+    target.priority = newPriority;
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      toStatus: target.status,
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: `Priority changed from ${prevPriority} to ${newPriority} by ${actorRole}`,
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'REPRIORITIZE',
+      'Complaint',
+      target.referenceId,
+      `Priority updated from ${prevPriority} to ${newPriority}`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async escalateComplaint(
+    complaintId: string,
+    escalationNotes: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(200);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      toStatus: target.status,
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: `Manual escalation by Warden: ${escalationNotes.trim()}`,
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'MANUAL_ESCALATE',
+      'Complaint',
+      target.referenceId,
+      `Escalated to Hostel Admin. Notes: ${escalationNotes}`
+    );
+
+    this.saveToStorage();
     return JSON.parse(JSON.stringify(target));
   }
 }
