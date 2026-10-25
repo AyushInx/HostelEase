@@ -3,7 +3,7 @@ node_modules/
 .pnp
 .pnp.js
 
-# Environment files
+# Environment files (CRITICAL: secrets never committed)
 .env
 .env.local
 .env.development.local
@@ -11,11 +11,13 @@ node_modules/
 .env.production.local
 
 # Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 lerna-debug.log*
-*.log
 
 # Runtime data
 pids
@@ -25,11 +27,18 @@ pids
 
 # Build output
 dist/
+dist-ssr/
 build/
 coverage/
 
 # OS and IDE files
 .DS_Store
 Thumbs.db
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
