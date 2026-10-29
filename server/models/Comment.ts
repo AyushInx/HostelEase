@@ -47,4 +47,4 @@ const CommentSchema = new Schema<IComment>(
 
 CommentSchema.index({ complaint: 1, createdAt: 1 });
 
-export const Comment = mongoose.model<IComment>('Comment', CommentSchema);
+export const Comment = (mongoose.models.Comment as mongoose.Model<IComment>) || mongoose.model<IComment>('Comment', CommentSchema);

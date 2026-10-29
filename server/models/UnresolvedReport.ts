@@ -39,4 +39,6 @@ const UnresolvedReportSchema = new Schema<IUnresolvedReport>(
 // SPEC INVARIANT: Unique index on (complaint, student) preventing duplicate unresolved reports
 UnresolvedReportSchema.index({ complaint: 1, student: 1 }, { unique: true });
 
-export const UnresolvedReport = mongoose.model<IUnresolvedReport>('UnresolvedReport', UnresolvedReportSchema);
+export const UnresolvedReport =
+  (mongoose.models.UnresolvedReport as mongoose.Model<IUnresolvedReport>) ||
+  mongoose.model<IUnresolvedReport>('UnresolvedReport', UnresolvedReportSchema);

@@ -37,4 +37,4 @@ const SupportSchema = new Schema<ISupport>(
 // SPEC INVARIANT: Unique index on (complaint, student) preventing duplicate community support (+1)
 SupportSchema.index({ complaint: 1, student: 1 }, { unique: true });
 
-export const Support = mongoose.model<ISupport>('Support', SupportSchema);
+export const Support = (mongoose.models.Support as mongoose.Model<ISupport>) || mongoose.model<ISupport>('Support', SupportSchema);

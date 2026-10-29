@@ -56,4 +56,4 @@ const AssignmentSchema = new Schema<IAssignment>(
 
 AssignmentSchema.index({ complaint: 1, assignedAt: -1 });
 
-export const Assignment = mongoose.model<IAssignment>('Assignment', AssignmentSchema);
+export const Assignment = (mongoose.models.Assignment as mongoose.Model<IAssignment>) || mongoose.model<IAssignment>('Assignment', AssignmentSchema);

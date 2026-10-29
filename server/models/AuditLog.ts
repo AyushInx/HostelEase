@@ -46,4 +46,4 @@ const AuditLogSchema = new Schema<IAuditLog>(
 // Reverse chronological indexing for audit trail inspection
 AuditLogSchema.index({ timestamp: -1 });
 
-export const AuditLog = mongoose.model<IAuditLog>('AuditLog', AuditLogSchema);
+export const AuditLog = (mongoose.models.AuditLog as mongoose.Model<IAuditLog>) || mongoose.model<IAuditLog>('AuditLog', AuditLogSchema);

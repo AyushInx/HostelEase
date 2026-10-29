@@ -46,4 +46,4 @@ const StatusHistorySchema = new Schema<IStatusHistory>(
 
 StatusHistorySchema.index({ complaint: 1, timestamp: -1 });
 
-export const StatusHistory = mongoose.model<IStatusHistory>('StatusHistory', StatusHistorySchema);
+export const StatusHistory = (mongoose.models.StatusHistory as mongoose.Model<IStatusHistory>) || mongoose.model<IStatusHistory>('StatusHistory', StatusHistorySchema);

@@ -21,9 +21,9 @@ export async function connectDB(customUri?: string): Promise<typeof mongoose> {
     }
     return conn;
   } catch (err: any) {
-    if (env.NODE_ENV === 'production' || env.NODE_ENV === 'test') {
-      console.error(`❌ Fatal: Failed to connect to primary MongoDB in ${env.NODE_ENV}: ${err.message}`);
-      throw err;
+    if (env.NODE_ENV === 'production' || !!process.env.VERCEL || env.NODE_ENV === 'test') {
+      console.error(`❌ Fatal: Failed to connect to primary MongoDB in production/serverless: ${err.message}`);
+      throw new Error(`Primary MongoDB connection failed: ${err.message}. Please verify MONGODB_URI is configured correctly.`);
     }
     console.warn(`⚠️ Could not connect to primary MongoDB at ${targetUri}: ${err.message}`);
     console.log('🔄 Attempting fallback: starting embedded Mongo for development...');

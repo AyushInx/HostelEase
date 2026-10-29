@@ -122,4 +122,4 @@ export function generateTicketReference(): string {
   return `HCT-${year}-${rand}`;
 }
 
-export const Complaint = mongoose.model<IComplaint>('Complaint', ComplaintSchema);
+export const Complaint = (mongoose.models.Complaint as mongoose.Model<IComplaint>) || mongoose.model<IComplaint>('Complaint', ComplaintSchema);

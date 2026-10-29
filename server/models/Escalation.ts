@@ -83,4 +83,4 @@ const EscalationSchema = new Schema<IEscalation>(
 // Idempotent escalation: one record per complaint, SLA type, and tier
 EscalationSchema.index({ complaint: 1, slaType: 1, escalationTier: 1 }, { unique: true });
 
-export const Escalation = mongoose.model<IEscalation>('Escalation', EscalationSchema);
+export const Escalation = (mongoose.models.Escalation as mongoose.Model<IEscalation>) || mongoose.model<IEscalation>('Escalation', EscalationSchema);

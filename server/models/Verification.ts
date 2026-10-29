@@ -152,4 +152,6 @@ VerificationSchema.methods.verifyOtp = async function (candidateOtp: string): Pr
   return verifyKeyedOtp(candidateOtp, this.email, this.verificationId, this.otpHash);
 };
 
-export const Verification = mongoose.model<IVerification>('Verification', VerificationSchema);
+export const Verification =
+  (mongoose.models.Verification as mongoose.Model<IVerification>) ||
+  mongoose.model<IVerification>('Verification', VerificationSchema);

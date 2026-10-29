@@ -45,4 +45,4 @@ const HostelSchema = new Schema<IHostel>(
   }
 );
 
-export const Hostel = mongoose.model<IHostel>('Hostel', HostelSchema);
+export const Hostel = (mongoose.models.Hostel as mongoose.Model<IHostel>) || mongoose.model<IHostel>('Hostel', HostelSchema);
