@@ -23,7 +23,7 @@ describe('StaffDashboardPage (Phase 3 - 4 Staff Roles)', () => {
   it('renders Caretaker view with Acknowledge, Assign, and Reject actions (no Confirm Resolution)', async () => {
     // 1. Authenticate Caretaker
     await authService.loginStaff({
-      email: 'caretaker.mandakini@hostel.edu',
+      email: 'caretaker.kalam@iitp.ac.in',
       password: 'mock-staff-pass',
     });
 
@@ -32,7 +32,7 @@ describe('StaffDashboardPage (Phase 3 - 4 Staff Roles)', () => {
     await waitFor(() => {
       expect(screen.getByText(/Suresh Kumar/i)).toBeInTheDocument();
       expect(screen.getByText(/Caretaker Portal/i)).toBeInTheDocument();
-      expect(screen.getByText(/Mandakini Hostel Jurisdiction/i)).toBeInTheDocument();
+      expect(screen.getByText(/Kalam Hostel Jurisdiction/i)).toBeInTheDocument();
     });
 
     await waitFor(() => {
@@ -48,7 +48,7 @@ describe('StaffDashboardPage (Phase 3 - 4 Staff Roles)', () => {
   it('renders Technician view showing assigned orders and Start Work / Complete Work (no Reject)', async () => {
     // 2. Authenticate Technician Rajesh Verma
     await authService.loginStaff({
-      email: 'tech.raj@hostel.edu',
+      email: 'tech.raj@iitp.ac.in',
       password: 'mock-staff-pass',
     });
 
@@ -75,7 +75,7 @@ describe('StaffDashboardPage (Phase 3 - 4 Staff Roles)', () => {
   it('renders Warden view with Confirm Resolution, Reprioritize, and Reject actions', async () => {
     // 3. Authenticate Warden Dr. Anita Roy
     await authService.loginStaff({
-      email: 'warden.mandakini@hostel.edu',
+      email: 'warden.kalam@iitp.ac.in',
       password: 'mock-staff-pass',
     });
 
@@ -103,7 +103,7 @@ describe('StaffDashboardPage (Phase 3 - 4 Staff Roles)', () => {
   it('renders Hostel Admin view with cross-hostel tabs, staff management, and audit logs', async () => {
     // 4. Authenticate Hostel Admin
     await authService.loginStaff({
-      email: 'admin@campus.edu',
+      email: 'admin@iitp.ac.in',
       password: 'mock-admin-pass',
     });
 
@@ -125,7 +125,7 @@ describe('StaffDashboardPage (Phase 3 - 4 Staff Roles)', () => {
     fireEvent.click(hostelsTab);
     await waitFor(() => {
       expect(screen.getByText(/Hostel & Block Management/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/Mandakini Hostel/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText(/C\.V\.R Hostel/i).length).toBeGreaterThanOrEqual(1);
     });
 
     // Switch to Staff Accounts tab

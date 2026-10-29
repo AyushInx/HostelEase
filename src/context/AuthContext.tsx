@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { AuthCredentials, AuthResult, AuthUser } from '../types/auth';
-import { authService, IS_MOCK_AUTH } from '../services/mockAuthService';
+import type { AuthCredentials, AuthResult, AuthUser, RegisterStudentData } from '../types/auth';
+import { apiAuthService } from '../services/apiAuthService';
+import { IS_MOCK_AUTH } from '../services/mockAuthService';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -9,6 +10,8 @@ interface AuthContextValue {
   loginStudent: (credentials: AuthCredentials) => Promise<AuthResult>;
   loginStaff: (credentials: AuthCredentials) => Promise<AuthResult>;
   logout: () => Promise<void>;
+  sendStudentOtp?: (email: string) => Promise<{ success: boolean; message?: string }>;
+  registerStudent?: (data: RegisterStudentData) => Promise<AuthResult>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -19,7 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
-    authService.getCurrentUser()
+    apiAuthService.getCurrentUser()
       .then((currentUser) => {
         if (mounted) {
           setUser(currentUser);
@@ -39,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const loginStudent = async (credentials: AuthCredentials): Promise<AuthResult> => {
-    const res = await authService.loginStudent(credentials);
+    const res = await apiAuthService.loginStudent(credentials);
     if (res.success && res.user) {
       setUser(res.user);
     }
@@ -47,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginStaff = async (credentials: AuthCredentials): Promise<AuthResult> => {
-    const res = await authService.loginStaff(credentials);
+    const res = await apiAuthService.loginStaff(credentials);
     if (res.success && res.user) {
       setUser(res.user);
     }
@@ -55,8 +58,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async (): Promise<void> => {
-    await authService.logout();
+    await apiAuthService.logout();
     setUser(null);
+  };
+
+  const sendStudentOtp = async (email: string) => {
+    return await apiAuthService.sendStudentOtp(email);
+  };
+
+  const registerStudent = async (data: RegisterStudentData) => {
+    const res = await apiAuthService.registerStudent(data);
+    if (res.success && res.user) {
+      setUser(res.user);
+    }
+    return res;
   };
 
   return (
@@ -68,6 +83,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginStudent,
         loginStaff,
         logout,
+        sendStudentOtp,
+        registerStudent,
       }}
     >
       {children}

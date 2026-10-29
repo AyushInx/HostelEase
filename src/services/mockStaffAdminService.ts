@@ -39,43 +39,56 @@ export interface AuditLogEntry {
   timestamp: string;
 }
 
-const STORAGE_HOSTELS_KEY = 'hct_mock_hostels_v1';
+const STORAGE_HOSTELS_KEY = 'hct_mock_hostels_v2';
 const STORAGE_STAFF_KEY = 'hct_mock_staff_v1';
 const STORAGE_AUDIT_KEY = 'hct_mock_audit_v1';
 
 const INITIAL_HOSTELS: HostelRecord[] = [
   {
     id: 'hst_001',
-    name: 'Mandakini Hostel',
-    code: 'MND',
+    name: 'C.V.R Hostel',
+    code: 'CVR',
     caretakerName: 'Suresh Kumar',
     wardenName: 'Dr. Anita Roy',
     blocks: [
-      { id: 'blk_001', name: 'A Block', floors: 4, roomsCount: 120 },
-      { id: 'blk_002', name: 'B Block', floors: 4, roomsCount: 120 },
+      { id: 'blk_001', name: 'A Block', floors: 8, roomsCount: 224 },
     ],
   },
   {
     id: 'hst_002',
-    name: 'Kaveri Hostel',
-    code: 'KVR',
+    name: 'Kalam Hostel',
+    code: 'KLM',
     caretakerName: 'Ramesh Chandra',
     wardenName: 'Dr. K. Sharma',
     blocks: [
-      { id: 'blk_003', name: 'A Block', floors: 3, roomsCount: 90 },
-      { id: 'blk_004', name: 'B Block', floors: 3, roomsCount: 90 },
-      { id: 'blk_005', name: 'C Block', floors: 3, roomsCount: 90 },
+      { id: 'blk_002', name: 'A Block', floors: 8, roomsCount: 296 },
+      { id: 'blk_003', name: 'B Block', floors: 8, roomsCount: 208 },
+      { id: 'blk_004', name: 'C Block', floors: 8, roomsCount: 208 },
+      { id: 'blk_005', name: 'D Block', floors: 8, roomsCount: 296 },
     ],
   },
   {
     id: 'hst_003',
-    name: 'Ganga Hostel',
-    code: 'GNG',
+    name: 'Aryabhatta Hostel',
+    code: 'ABH',
+    caretakerName: 'Rakesh Verma',
+    wardenName: 'Dr. S. Mukherjee',
+    blocks: [
+      { id: 'blk_006', name: 'A Block', floors: 8, roomsCount: 256 },
+      { id: 'blk_007', name: 'B Block', floors: 8, roomsCount: 256 },
+      { id: 'blk_008', name: 'C Block', floors: 8, roomsCount: 256 },
+      { id: 'blk_009', name: 'D Block', floors: 8, roomsCount: 256 },
+    ],
+  },
+  {
+    id: 'hst_004',
+    name: 'Asima Hostel',
+    code: 'ASM',
     caretakerName: 'Mahesh Babu',
     wardenName: 'Prof. V. Raman',
     blocks: [
-      { id: 'blk_006', name: 'East Wing', floors: 5, roomsCount: 150 },
-      { id: 'blk_007', name: 'West Wing', floors: 5, roomsCount: 150 },
+      { id: 'blk_010', name: 'East Wing', floors: 5, roomsCount: 150 },
+      { id: 'blk_011', name: 'West Wing', floors: 5, roomsCount: 150 },
     ],
   },
 ];
@@ -84,16 +97,16 @@ const INITIAL_STAFF: StaffAccount[] = [
   {
     id: 'usr_mock_ct_001',
     name: 'Suresh Kumar',
-    email: 'caretaker.mandakini@hostel.edu',
+    email: 'caretaker.kalam@iitp.ac.in',
     role: 'Caretaker',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'Kalam Hostel',
     status: 'active',
     createdAt: '2025-11-01T10:00:00Z',
   },
   {
     id: 'usr_mock_tech_001',
     name: 'Rajesh Verma (Electrician)',
-    email: 'tech.raj@hostel.edu',
+    email: 'tech.raj@iitp.ac.in',
     role: 'Technician',
     specialization: 'Electrical & Power Systems',
     status: 'active',
@@ -102,7 +115,7 @@ const INITIAL_STAFF: StaffAccount[] = [
   {
     id: 'usr_mock_tech_002',
     name: 'Amit Singh (Plumber)',
-    email: 'tech.amit@hostel.edu',
+    email: 'tech.amit@iitp.ac.in',
     role: 'Technician',
     specialization: 'Plumbing & Drainage',
     status: 'active',
@@ -111,7 +124,7 @@ const INITIAL_STAFF: StaffAccount[] = [
   {
     id: 'usr_mock_tech_003',
     name: 'Dilip Rao (Carpenter)',
-    email: 'tech.dilip@hostel.edu',
+    email: 'tech.dilip@iitp.ac.in',
     role: 'Technician',
     specialization: 'Carpentry & Furniture',
     status: 'active',
@@ -120,16 +133,16 @@ const INITIAL_STAFF: StaffAccount[] = [
   {
     id: 'usr_mock_wd_001',
     name: 'Dr. Anita Roy',
-    email: 'warden.mandakini@hostel.edu',
+    email: 'warden.kalam@iitp.ac.in',
     role: 'Warden',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'Kalam Hostel',
     status: 'active',
     createdAt: '2025-10-01T10:00:00Z',
   },
   {
     id: 'usr_mock_adm_001',
     name: 'Campus Chief Admin',
-    email: 'admin@campus.edu',
+    email: 'admin@iitp.ac.in',
     role: 'Hostel Admin',
     status: 'active',
     createdAt: '2025-08-01T10:00:00Z',
@@ -145,7 +158,7 @@ const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
     action: 'SEED_SYSTEM',
     targetEntity: 'Hostel',
     entityId: 'SYSTEM',
-    details: 'Initial system bootstrap via environment variables. Hostels Mandakini, Kaveri configured.',
+    details: 'Initial system bootstrap via environment variables. Hostels C.V.R, Kalam, Asima configured.',
     timestamp: '2026-10-01T08:00:00Z',
   },
   {
@@ -156,7 +169,7 @@ const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
     action: 'PROVISION_STAFF',
     targetEntity: 'Staff',
     entityId: 'usr_mock_ct_001',
-    details: 'Provisioned Caretaker Suresh Kumar for Mandakini Hostel.',
+    details: 'Provisioned Caretaker Suresh Kumar for Kalam Hostel.',
     timestamp: '2026-10-05T09:30:00Z',
   },
   {
@@ -206,7 +219,14 @@ class MockStaffAdminService {
   private load() {
     try {
       const h = sessionStorage.getItem(STORAGE_HOSTELS_KEY);
-      this.hostels = h ? JSON.parse(h) : JSON.parse(JSON.stringify(INITIAL_HOSTELS));
+      const parsed = h ? JSON.parse(h) : null;
+      // Auto-refresh cache if Aryabhatta is missing or CVR blocks need sync
+      const needsRefresh = !parsed || !parsed.some((x: any) => x.name === 'Aryabhatta Hostel') || parsed.find((x: any) => x.code === 'CVR')?.blocks?.length !== 1;
+      
+      this.hostels = needsRefresh ? JSON.parse(JSON.stringify(INITIAL_HOSTELS)) : parsed;
+      if (needsRefresh) {
+        sessionStorage.setItem(STORAGE_HOSTELS_KEY, JSON.stringify(this.hostels));
+      }
 
       const s = sessionStorage.getItem(STORAGE_STAFF_KEY);
       this.staff = s ? JSON.parse(s) : JSON.parse(JSON.stringify(INITIAL_STAFF));

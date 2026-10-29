@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
+import '@testing-library/jest-dom';
 import { StaffLoginPage } from '../pages/StaffLoginPage';
 import { AuthProvider } from '../context/AuthContext';
 
@@ -61,7 +62,7 @@ describe('StaffLoginPage', () => {
     const emailInput = screen.getByLabelText(/Staff Institutional Email/i) as HTMLInputElement;
     const passwordInput = screen.getByLabelText(/^Password/i, { selector: 'input' }) as HTMLInputElement;
 
-    expect(emailInput.value).toBe('caretaker.mandakini@hostel.edu');
+    expect(emailInput.value).toBe('caretaker.kalam@iitp.ac.in');
     expect(passwordInput.value).toBe('mock-staff-pass');
   });
 
@@ -73,7 +74,7 @@ describe('StaffLoginPage', () => {
     const passwordInput = screen.getByLabelText(/^Password/i, { selector: 'input' });
     const submitBtn = screen.getByRole('button', { name: /Authenticate Staff/i });
 
-    await user.type(emailInput, 'alex.sharma@college.edu');
+    await user.type(emailInput, 'alex.sharma@iitp.ac.in');
     await user.type(passwordInput, 'mock-student-pass');
     await user.click(submitBtn);
 

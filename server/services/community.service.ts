@@ -27,7 +27,7 @@ export interface SanitizedCommunityComplaint {
 
 export class CommunityService {
   async getCommunityFeed(user: AuthUserPayload): Promise<SanitizedCommunityComplaint[]> {
-    const hostelFilter = user.role === 'Hostel Admin' ? {} : { hostelName: user.hostelName || 'Mandakini Hostel' };
+    const hostelFilter = user.role === 'Hostel Admin' ? {} : { hostelName: user.hostelName || 'C.V.R Hostel' };
     
     // Fetch complaints
     const complaints = await Complaint.find(hostelFilter).sort({ createdAt: -1 }).limit(50);
@@ -162,6 +162,70 @@ export class CommunityService {
       }
       throw err;
     }
+  }
+
+  async getUnresolvedSummary(user: AuthUserPayload): Promise<{
+    totalUnresolvedReports: number;
+    complaintsWithUnresolvedReports: number;
+    complaints: Array<{
+      id: string;
+      referenceId: string;
+      title: string;
+      hostelName: string;
+      roomNumber: string;
+      status: string;
+      priority: string;
+      unresolvedReportsCount: number;
+      reports: Array<{
+        id: string;
+        reportedAt: Date;
+        remarks?: string;
+      }>;
+    }>;
+  }> {
+    if (user.role === 'Student') {
+      throw new AppError('Only staff can access aggregate unresolved reports summary.', 403);
+    }
+
+    const hostelFilter: any = {};
+    if ((user.role === 'Caretaker' || user.role === 'Warden') && user.hostelName) {
+      hostelFilter.hostelName = user.hostelName;
+    }
+
+    const complaints = await Complaint.find({
+      ...hostelFilter,
+      unresolvedReportsCount: { $gt: 0 },
+    }).sort({ unresolvedReportsCount: -1 });
+
+    const complaintIds = complaints.map((c) => c._id);
+    const reports = await UnresolvedReport.find({ complaint: { $in: complaintIds } }).sort({ reportedAt: -1 });
+
+    const reportsByComplaint = new Map<string, any[]>();
+    for (const r of reports) {
+      const cid = r.complaint.toString();
+      if (!reportsByComplaint.has(cid)) reportsByComplaint.set(cid, []);
+      reportsByComplaint.get(cid)!.push({
+        id: r._id.toString(),
+        reportedAt: r.reportedAt,
+        remarks: r.remarks,
+      });
+    }
+
+    return {
+      totalUnresolvedReports: reports.length,
+      complaintsWithUnresolvedReports: complaints.length,
+      complaints: complaints.map((c) => ({
+        id: c._id.toString(),
+        referenceId: c.referenceId,
+        title: c.title,
+        hostelName: c.hostelName,
+        roomNumber: c.roomNumber,
+        status: c.status,
+        priority: c.priority,
+        unresolvedReportsCount: c.unresolvedReportsCount,
+        reports: reportsByComplaint.get(c._id.toString()) || [],
+      })),
+    };
   }
 }
 

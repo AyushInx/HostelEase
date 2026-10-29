@@ -8,6 +8,13 @@ const router = Router();
 
 router.get('/feed', requireAuth, (req, res, next) => communityController.feed(req, res, next));
 
+router.get(
+  '/unresolved-summary',
+  requireAuth,
+  requireRoles('Caretaker', 'Warden', 'Hostel Admin'),
+  (req, res, next) => communityController.unresolvedSummary(req, res, next)
+);
+
 router.post(
   '/:id/support',
   requireAuth,

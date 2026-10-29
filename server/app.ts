@@ -3,19 +3,21 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { authenticateSession } from './middleware/auth';
+import { csrfProtection } from './middleware/csrf';
 import { errorHandler } from './middleware/error';
 import apiRoutes from './routes';
 
 export function createApp(): Express {
   const app = express();
 
-  // CORS configuration for httpOnly cookies
+  // CORS configuration for httpOnly cookies & CSRF tokens
   app.use(
     cors({
       origin: env.CLIENT_ORIGIN,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-xsrf-token', 'x-csrf-token'],
+      exposedHeaders: ['set-cookie'],
     })
   );
 
@@ -23,6 +25,9 @@ export function createApp(): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser(env.COOKIE_SECRET));
+
+  // CSRF Double-Submit Protection for state-changing requests
+  app.use(csrfProtection);
 
   // Global session authentication middleware
   app.use(authenticateSession);

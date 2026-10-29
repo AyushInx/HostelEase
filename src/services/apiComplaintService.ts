@@ -10,17 +10,42 @@ import type {
 } from '../types/complaint';
 import { complaintService as mockComplaintService } from './mockComplaintService';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : '') + '/api';
+
+function getCsrfTokenFromCookie(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function shouldFallbackToMock(err: any): boolean {
+  if (import.meta.env.PROD) return false;
+  const msg = (err?.message || '').toLowerCase();
+  return (
+    msg.includes('failed to fetch') ||
+    msg.includes('network') ||
+    msg.includes('econnrefused') ||
+    err?.name === 'TypeError'
+  );
+}
 
 export class ApiComplaintService implements IComplaintService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     try {
+      const method = (options.method || 'GET').toUpperCase();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(options.headers as Record<string, string> || {}),
+      };
+
+      const csrfToken = getCsrfTokenFromCookie();
+      if (csrfToken && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+        headers['x-xsrf-token'] = csrfToken;
+      }
+
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(options.headers || {}),
-        },
+        headers,
         credentials: 'include', // sends httpOnly session cookie
       });
 
@@ -55,8 +80,11 @@ export class ApiComplaintService implements IComplaintService {
         resolved: complaints.filter((c) => c.status === 'Resolved').length,
         reopened: complaints.filter((c) => c.status === 'Reopened').length,
       };
-    } catch {
-      return mockComplaintService.getOverviewStats(studentId, hostelName);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.getOverviewStats(studentId, hostelName);
+      }
+      throw err;
     }
   }
 
@@ -69,8 +97,11 @@ export class ApiComplaintService implements IComplaintService {
       
       const list: any[] = await this.request(`/complaints?${query.toString()}`);
       return this.mapComplaints(list);
-    } catch {
-      return mockComplaintService.getMyComplaints(studentId, filters);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.getMyComplaints(studentId, filters);
+      }
+      throw err;
     }
   }
 
@@ -91,8 +122,11 @@ export class ApiComplaintService implements IComplaintService {
 
       const list: any[] = await this.request(`/complaints?${query.toString()}`);
       return this.mapComplaints(list);
-    } catch {
-      return mockComplaintService.getStaffComplaints(actorRole, actorName, actorHostel, filters);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.getStaffComplaints(actorRole, actorName, actorHostel, filters);
+      }
+      throw err;
     }
   }
 
@@ -101,8 +135,11 @@ export class ApiComplaintService implements IComplaintService {
       const data: any = await this.request(`/complaints/${complaintId}`);
       if (!data) return null;
       return this.mapComplaint(data.complaint || data, data.timeline);
-    } catch {
-      return mockComplaintService.getComplaintById(complaintId);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.getComplaintById(complaintId);
+      }
+      throw err;
     }
   }
 
@@ -117,8 +154,11 @@ export class ApiComplaintService implements IComplaintService {
         body: JSON.stringify(input),
       });
       return this.mapComplaint(created);
-    } catch {
-      return mockComplaintService.createComplaint(studentId, studentName, input);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.createComplaint(studentId, studentName, input);
+      }
+      throw err;
     }
   }
 
@@ -126,8 +166,11 @@ export class ApiComplaintService implements IComplaintService {
     try {
       const list: any[] = await this.request('/community/feed');
       return this.mapComplaints(list);
-    } catch {
-      return mockComplaintService.getCommunityFeed(hostelName);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.getCommunityFeed(hostelName);
+      }
+      throw err;
     }
   }
 
@@ -136,8 +179,11 @@ export class ApiComplaintService implements IComplaintService {
       return await this.request(`/community/${complaintId}/support`, {
         method: 'POST',
       });
-    } catch {
-      return mockComplaintService.toggleSupport(complaintId, studentId);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.toggleSupport(complaintId, studentId);
+      }
+      throw err;
     }
   }
 
@@ -153,8 +199,11 @@ export class ApiComplaintService implements IComplaintService {
         method: 'POST',
         body: JSON.stringify({ content, visibility: 'public' }),
       });
-    } catch {
-      return mockComplaintService.addComment(complaintId, authorId, authorName, authorRole, content);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.addComment(complaintId, authorId, authorName, authorRole, content);
+      }
+      throw err;
     }
   }
 
@@ -169,8 +218,11 @@ export class ApiComplaintService implements IComplaintService {
         body: JSON.stringify({ remarks: reason }),
       });
       return { success: true, unresolvedCount: res.unresolvedReportsCount, message: 'Unresolved report recorded.' };
-    } catch {
-      return mockComplaintService.reportUnresolved(complaintId, studentId, reason);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.reportUnresolved(complaintId, studentId, reason);
+      }
+      throw err;
     }
   }
 
@@ -181,8 +233,11 @@ export class ApiComplaintService implements IComplaintService {
         body: JSON.stringify({ reason }),
       });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.requestReopen(complaintId, studentId, reason);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.requestReopen(complaintId, studentId, reason);
+      }
+      throw err;
     }
   }
 
@@ -190,8 +245,11 @@ export class ApiComplaintService implements IComplaintService {
     try {
       const updated: any = await this.request(`/complaints/${complaintId}/acknowledge`, { method: 'POST' });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.acknowledgeComplaint(complaintId, actorId, actorName, actorRole);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.acknowledgeComplaint(complaintId, actorId, actorName, actorRole);
+      }
+      throw err;
     }
   }
 
@@ -209,8 +267,11 @@ export class ApiComplaintService implements IComplaintService {
         body: JSON.stringify({ technicianId: actorId, notes }),
       });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.assignTechnician(complaintId, technicianName, notes, actorId, actorName, actorRole);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.assignTechnician(complaintId, technicianName, notes, actorId, actorName, actorRole);
+      }
+      throw err;
     }
   }
 
@@ -218,8 +279,11 @@ export class ApiComplaintService implements IComplaintService {
     try {
       const updated: any = await this.request(`/complaints/${complaintId}/start-work`, { method: 'POST' });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.startWork(complaintId, actorId, actorName, actorRole);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.startWork(complaintId, actorId, actorName, actorRole);
+      }
+      throw err;
     }
   }
 
@@ -236,8 +300,11 @@ export class ApiComplaintService implements IComplaintService {
         body: JSON.stringify({ repairNotes }),
       });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.markWorkCompleted(complaintId, repairNotes, actorId, actorName, actorRole);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.markWorkCompleted(complaintId, repairNotes, actorId, actorName, actorRole);
+      }
+      throw err;
     }
   }
 
@@ -251,8 +318,32 @@ export class ApiComplaintService implements IComplaintService {
     try {
       const updated: any = await this.request(`/complaints/${complaintId}/confirm-resolution`, { method: 'POST' });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.confirmResolution(complaintId, resolutionRemarks, actorId, actorName, actorRole);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.confirmResolution(complaintId, resolutionRemarks, actorId, actorName, actorRole);
+      }
+      throw err;
+    }
+  }
+
+  async returnWorkInProgress(
+    complaintId: string,
+    mandatoryReason: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    try {
+      const updated: any = await this.request(`/complaints/${complaintId}/return-in-progress`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: mandatoryReason }),
+      });
+      return this.mapComplaint(updated);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.returnWorkInProgress(complaintId, mandatoryReason, actorId, actorName, actorRole);
+      }
+      throw err;
     }
   }
 
@@ -269,8 +360,11 @@ export class ApiComplaintService implements IComplaintService {
         body: JSON.stringify({ reason: mandatoryReason }),
       });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.rejectComplaint(complaintId, mandatoryReason, actorId, actorName, actorRole);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.rejectComplaint(complaintId, mandatoryReason, actorId, actorName, actorRole);
+      }
+      throw err;
     }
   }
 
@@ -284,8 +378,32 @@ export class ApiComplaintService implements IComplaintService {
     try {
       const updated: any = await this.request(`/complaints/${complaintId}/approve-reopen`, { method: 'POST' });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.approveReopen(complaintId, technicianName, actorId, actorName, actorRole);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.approveReopen(complaintId, technicianName, actorId, actorName, actorRole);
+      }
+      throw err;
+    }
+  }
+
+  async rejectReopen(
+    complaintId: string,
+    mandatoryReason: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    try {
+      const updated: any = await this.request(`/complaints/${complaintId}/reject-reopen`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: mandatoryReason }),
+      });
+      return this.mapComplaint(updated);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.rejectReopen(complaintId, mandatoryReason, actorId, actorName, actorRole);
+      }
+      throw err;
     }
   }
 
@@ -302,8 +420,11 @@ export class ApiComplaintService implements IComplaintService {
         body: JSON.stringify({ priority: newPriority }),
       });
       return this.mapComplaint(updated);
-    } catch {
-      return mockComplaintService.reprioritizeComplaint(complaintId, newPriority, actorId, actorName, actorRole);
+    } catch (err: any) {
+      if (shouldFallbackToMock(err)) {
+        return mockComplaintService.reprioritizeComplaint(complaintId, newPriority, actorId, actorName, actorRole);
+      }
+      throw err;
     }
   }
 

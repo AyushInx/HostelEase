@@ -119,14 +119,14 @@ export const StaffLoginPage: React.FC = () => {
             label="Staff Institutional Email"
             type="email"
             required
-            placeholder="e.g. staff.name@hostel.edu"
+            placeholder="e.g. staff.name@iitp.ac.in"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
               if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
             }}
             error={errors.email}
-            helperText="Official staff email assigned by administration"
+            helperText="Official staff email assigned by administration (must end with @iitp.ac.in)"
             leftIcon={<Mail className="w-4 h-4" />}
             autoComplete="email"
           />
@@ -168,38 +168,38 @@ export const StaffLoginPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-2 text-xs">
             <button
               type="button"
-              onClick={() => setDemoCredentials('caretaker.mandakini@hostel.edu', 'mock-staff-pass')}
+              onClick={() => setDemoCredentials('caretaker.kalam@iitp.ac.in', 'mock-staff-pass')}
               className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
             >
               <div className="font-semibold text-slate-800">Caretaker</div>
-              <div className="text-[10px] text-slate-400 truncate">caretaker.mandakini...</div>
+              <div className="text-[10px] text-slate-400 truncate">caretaker.kalam...</div>
             </button>
 
             <button
               type="button"
-              onClick={() => setDemoCredentials('tech.raj@hostel.edu', 'mock-staff-pass')}
+              onClick={() => setDemoCredentials('tech.raj@iitp.ac.in', 'mock-staff-pass')}
               className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
             >
               <div className="font-semibold text-slate-800">Technician</div>
-              <div className="text-[10px] text-slate-400 truncate">tech.raj@hostel.edu</div>
+              <div className="text-[10px] text-slate-400 truncate">tech.raj@iitp.ac.in</div>
             </button>
 
             <button
               type="button"
-              onClick={() => setDemoCredentials('warden.mandakini@hostel.edu', 'mock-staff-pass')}
+              onClick={() => setDemoCredentials('warden.kalam@iitp.ac.in', 'mock-staff-pass')}
               className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
             >
               <div className="font-semibold text-slate-800">Warden</div>
-              <div className="text-[10px] text-slate-400 truncate">warden.mandakini...</div>
+              <div className="text-[10px] text-slate-400 truncate">warden.kalam...</div>
             </button>
 
             <button
               type="button"
-              onClick={() => setDemoCredentials('admin@campus.edu', 'mock-admin-pass')}
+              onClick={() => setDemoCredentials('admin@iitp.ac.in', 'mock-admin-pass')}
               className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
             >
               <div className="font-semibold text-slate-800">Hostel Admin</div>
-              <div className="text-[10px] text-slate-400 truncate">admin@campus.edu</div>
+              <div className="text-[10px] text-slate-400 truncate">admin@iitp.ac.in</div>
             </button>
           </div>
         </div>

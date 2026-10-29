@@ -7,6 +7,7 @@
     "dev": "vite",
     "server": "tsx server/server.ts",
     "seed": "tsx server/scripts/seed.ts",
+    "seed:demo": "tsx server/scripts/seed.demo.ts",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
@@ -27,6 +28,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.4",
+    "resend": "^6.35.0",
     "tailwindcss": "^4.3.3",
     "zod": "^4.6.7"
   },

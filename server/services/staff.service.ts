@@ -115,6 +115,79 @@ export class StaffService {
 
     return staff;
   }
+
+  async getStudents(user: AuthUserPayload): Promise<IUser[]> {
+    const query: any = { role: 'Student' };
+    if ((user.role === 'Caretaker' || user.role === 'Warden') && user.hostelName) {
+      query.hostelName = user.hostelName;
+    }
+    return User.find(query).select('-passwordHash').sort({ createdAt: -1 });
+  }
+
+  async updateStudentEligibility(
+    studentId: string,
+    status: 'approved' | 'rejected' | 'suspended',
+    reason: string | undefined,
+    staffUser: AuthUserPayload
+  ): Promise<IUser> {
+    const student = await User.findOne({ _id: studentId, role: 'Student' });
+    if (!student) {
+      throw new AppError('Student record not found.', 404);
+    }
+
+    if (
+      (staffUser.role === 'Caretaker' || staffUser.role === 'Warden') &&
+      staffUser.hostelName &&
+      student.hostelName &&
+      student.hostelName !== staffUser.hostelName
+    ) {
+      throw new AppError(`Access denied: Cannot manage students outside your jurisdiction (${staffUser.hostelName}).`, 403);
+    }
+
+    const previousStatus = student.eligibilityStatus;
+    student.eligibilityStatus = status;
+    await student.save();
+
+    await auditService.record({
+      actorId: staffUser.id,
+      actorName: staffUser.name,
+      actorRole: staffUser.role,
+      action: 'UPDATE_STUDENT_ELIGIBILITY',
+      targetEntity: 'Student',
+      entityId: student.email,
+      details: `Updated residency eligibility for ${student.name} (${student.email}) from ${previousStatus} to ${status}. Reason: ${reason || 'N/A'}.`,
+    });
+
+    return student;
+  }
+
+  async changeStaffRole(staffId: string, newRole: UserRole, adminUser: AuthUserPayload): Promise<IUser> {
+    const staff = await User.findById(staffId);
+    if (!staff) {
+      throw new AppError('Staff account not found.', 404);
+    }
+
+    // SPEC INVARIANT: Self role change is strictly forbidden
+    if (staff._id.toString() === adminUser.id) {
+      throw new AppError('Self role change is forbidden. You cannot change your own administrative role.', 400);
+    }
+
+    const previousRole = staff.role;
+    staff.role = newRole;
+    await staff.save();
+
+    await auditService.record({
+      actorId: adminUser.id,
+      actorName: adminUser.name,
+      actorRole: adminUser.role,
+      action: 'CHANGE_STAFF_ROLE',
+      targetEntity: 'Staff',
+      entityId: staff.email,
+      details: `Changed role of ${staff.name} (${staff.email}) from ${previousRole} to ${newRole}.`,
+    });
+
+    return staff;
+  }
 }
 
 export const staffService = new StaffService();

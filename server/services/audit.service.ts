@@ -4,10 +4,10 @@ import { AuditLog, IAuditLog } from '../models/AuditLog';
 export class AuditService {
   async record(params: {
     actorId?: string | Types.ObjectId;
-    actorName: string;
-    actorRole: string;
+    actorName?: string;
+    actorRole?: string;
     action: string;
-    targetEntity: 'Complaint' | 'Staff' | 'Hostel' | 'SLA' | 'Auth';
+    targetEntity: 'Complaint' | 'Staff' | 'Hostel' | 'SLA' | 'Auth' | 'Student';
     entityId: string;
     details: string;
     ipAddress?: string;
@@ -15,8 +15,8 @@ export class AuditService {
   }): Promise<IAuditLog> {
     const entry = new AuditLog({
       actor: params.actorId ? new Types.ObjectId(params.actorId.toString()) : undefined,
-      actorName: params.actorName,
-      actorRole: params.actorRole,
+      actorName: params.actorName || 'System',
+      actorRole: params.actorRole || 'System',
       action: params.action,
       targetEntity: params.targetEntity,
       entityId: params.entityId,

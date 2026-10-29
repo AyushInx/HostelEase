@@ -10,7 +10,7 @@ describe('StudentDashboardPage (Phase 2)', () => {
   beforeEach(async () => {
     // Authenticate demo student Alex Sharma
     await authService.loginStudent({
-      email: 'alex.sharma@college.edu',
+      email: 'alex.sharma@iitp.ac.in',
       password: 'mock-student-pass',
     });
   });
@@ -30,7 +30,7 @@ describe('StudentDashboardPage (Phase 2)', () => {
 
     expect(screen.getByRole('heading', { name: /Student Maintenance Hub/i })).toBeInTheDocument();
     expect(screen.getByText(/Alex Sharma/i)).toBeInTheDocument();
-    expect(screen.getByText(/Mandakini Hostel, Room B-304/i)).toBeInTheDocument();
+    expect(screen.getByText(/C\.V\.R Hostel, Room B-304/i)).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText(/Total Tickets/i)).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe('StudentDashboardPage (Phase 2)', () => {
     const user = userEvent.setup();
     renderDashboard();
 
-    const communityTab = screen.getByRole('tab', { name: /Mandakini Hostel Community Board/i });
+    const communityTab = screen.getByRole('tab', { name: /C\.V\.R Hostel Community Board/i });
     await user.click(communityTab);
 
     await waitFor(() => {
@@ -122,7 +122,7 @@ describe('StudentDashboardPage (Phase 2)', () => {
     });
 
     // Verify student email is never displayed in community feed
-    expect(screen.queryByText(/priya\.patel@college\.edu/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/alex\.sharma@college\.edu/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/priya\.patel@iitp\.ac\.in/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/alex\.sharma@iitp\.ac\.in/i)).not.toBeInTheDocument();
   });
 });

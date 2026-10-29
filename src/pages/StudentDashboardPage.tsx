@@ -5,7 +5,9 @@ import {
   Users, 
   MapPin, 
   RefreshCw,
-  GraduationCap
+  GraduationCap,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 import type { 
   Complaint, 
@@ -13,7 +15,7 @@ import type {
   ComplaintOverviewStats, 
   ComplaintStatus 
 } from '../types/complaint';
-import { complaintService } from '../services/mockComplaintService';
+import { apiComplaintService as complaintService } from '../services/apiComplaintService';
 import { useAuth } from '../context/AuthContext';
 import { ComplaintStatsCard } from '../components/complaints/ComplaintStatsCard';
 import { MyComplaintsTab } from '../components/complaints/MyComplaintsTab';
@@ -50,7 +52,7 @@ export const StudentDashboardPage: React.FC = () => {
 
   const studentId = user?.id || 'usr_mock_std_001';
   const studentName = user?.name || 'Alex Sharma';
-  const hostelName = user?.hostelName || 'Mandakini Hostel';
+  const hostelName = user?.hostelName || 'C.V.R Hostel';
   const roomNumber = user?.roomNumber || 'B-304';
 
   const loadData = useCallback(async () => {
@@ -96,6 +98,44 @@ export const StudentDashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-8 py-2">
+      {/* Account State Banners (SPEC: Separate email verification & residency approval) */}
+      {user?.eligibilityStatus === 'pending' && (
+        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs sm:text-sm flex items-start gap-3 shadow-xs">
+          <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <strong className="block font-bold text-amber-950">Residency Eligibility Pending Staff Approval</strong>
+            <p className="text-amber-800 leading-relaxed">
+              Your institutional email (<span className="font-mono text-xs">{user.email}</span>) is verified. 
+              Your hostel residency allocation is currently pending approval by the hostel Caretaker or Warden.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {user?.eligibilityStatus === 'rejected' && (
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-xs sm:text-sm flex items-start gap-3 shadow-xs">
+          <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <strong className="block font-bold text-rose-950">Residency Application Rejected</strong>
+            <p className="text-rose-800 leading-relaxed">
+              Your hostel residency eligibility was not approved. Please consult with your hostel Warden or Caretaker.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {user?.eligibilityStatus === 'suspended' && (
+        <div className="p-4 bg-slate-900 border border-slate-800 text-slate-200 rounded-2xl text-xs sm:text-sm flex items-start gap-3 shadow-xs">
+          <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <strong className="block font-bold text-white">Account Suspended</strong>
+            <p className="text-slate-300 leading-relaxed">
+              This account has been suspended by administration. Please contact the campus Hostel Administrator.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Top Banner with Student Profile & Action */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1.5">
@@ -103,9 +143,22 @@ export const StudentDashboardPage: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Student Maintenance Hub
             </h1>
-            <Badge variant="primary" size="sm">
-              {user?.eligibilityStatus === 'approved' ? 'Active Resident' : 'Eligibility Pending'}
-            </Badge>
+            {user?.eligibilityStatus === 'approved' && (
+              <Badge variant="primary" size="sm">Active Resident</Badge>
+            )}
+            {user?.eligibilityStatus === 'pending' && (
+              <Badge variant="warning" size="sm">Eligibility Pending</Badge>
+            )}
+            {user?.eligibilityStatus === 'rejected' && (
+              <Badge variant="danger" size="sm">Eligibility Rejected</Badge>
+            )}
+            {user?.eligibilityStatus === 'suspended' && (
+              <Badge variant="danger" size="sm">Suspended</Badge>
+            )}
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              Email Verified
+            </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium">

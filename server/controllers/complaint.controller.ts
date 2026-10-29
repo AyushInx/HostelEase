@@ -80,8 +80,18 @@ export class ComplaintController {
 
   async confirmResolution(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const complaint = await complaintService.confirmResolution(getId(req), req.user!);
+      const { notes, resolutionNotes } = req.body || {};
+      const complaint = await complaintService.confirmResolution(getId(req), notes || resolutionNotes, req.user!);
       res.status(200).json({ success: true, data: complaint, message: 'Ticket confirmed and resolved' });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getAssignments(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const assignments = await complaintService.getAssignments(getId(req), req.user!);
+      res.status(200).json({ success: true, data: assignments });
     } catch (err) {
       next(err);
     }
@@ -111,6 +121,26 @@ export class ComplaintController {
     try {
       const complaint = await complaintService.approveReopen(getId(req), req.user!);
       res.status(200).json({ success: true, data: complaint, message: 'Reopening approved; ticket reassigned' });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async rejectReopen(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { reason } = req.body;
+      const complaint = await complaintService.rejectReopen(getId(req), reason, req.user!);
+      res.status(200).json({ success: true, data: complaint, message: 'Reopen request rejected; ticket remains Resolved' });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async returnWorkInProgress(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { reason } = req.body;
+      const complaint = await complaintService.returnWorkInProgress(getId(req), reason, req.user!);
+      res.status(200).json({ success: true, data: complaint, message: 'Work marked unsatisfactory; returned to In Progress' });
     } catch (err) {
       next(err);
     }

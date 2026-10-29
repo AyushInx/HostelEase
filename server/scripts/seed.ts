@@ -22,10 +22,13 @@ export async function runSeed(): Promise<void> {
       passwordHash: adminPasswordHash,
       role: 'Hostel Admin',
       eligibilityStatus: 'approved',
+      isDemo: true,
     });
     await admin.save();
     console.log(`   ✅ Admin created: ${admin.email}`);
   } else {
+    admin.isDemo = true;
+    await admin.save();
     console.log(`   ℹ️ Admin already exists: ${admin.email}`);
   }
 
@@ -33,28 +36,41 @@ export async function runSeed(): Promise<void> {
   console.log('🏢 Seeding Hostels and Blocks...');
   const hostelsData = [
     {
-      name: 'Mandakini Hostel',
-      code: 'MND',
+      name: 'C.V.R Hostel',
+      code: 'CVR',
       caretakerName: 'Suresh Kumar',
       wardenName: 'Dr. Anita Roy',
       blocks: [
-        { name: 'A Block', floors: 4, roomsCount: 120 },
-        { name: 'B Block', floors: 4, roomsCount: 120 },
+        { name: 'A Block', floors: 8, roomsCount: 224 },
       ],
     },
     {
-      name: 'Kaveri Hostel',
-      code: 'KVR',
+      name: 'Kalam Hostel',
+      code: 'KLM',
       caretakerName: 'Ramesh Chandra',
       wardenName: 'Dr. K. Sharma',
       blocks: [
-        { name: 'A Block', floors: 3, roomsCount: 90 },
-        { name: 'B Block', floors: 3, roomsCount: 90 },
+        { name: 'A Block', floors: 8, roomsCount: 296 },
+        { name: 'B Block', floors: 8, roomsCount: 208 },
+        { name: 'C Block', floors: 8, roomsCount: 208 },
+        { name: 'D Block', floors: 8, roomsCount: 296 },
       ],
     },
     {
-      name: 'Ganga Hostel',
-      code: 'GNG',
+      name: 'Aryabhatta Hostel',
+      code: 'ABH',
+      caretakerName: 'Rakesh Verma',
+      wardenName: 'Dr. S. Mukherjee',
+      blocks: [
+        { name: 'A Block', floors: 8, roomsCount: 256 },
+        { name: 'B Block', floors: 8, roomsCount: 256 },
+        { name: 'C Block', floors: 8, roomsCount: 256 },
+        { name: 'D Block', floors: 8, roomsCount: 256 },
+      ],
+    },
+    {
+      name: 'Asima Hostel',
+      code: 'ASM',
       caretakerName: 'Mahesh Babu',
       wardenName: 'Prof. V. Raman',
       blocks: [
@@ -69,6 +85,13 @@ export async function runSeed(): Promise<void> {
     if (!exists) {
       await Hostel.create(hData);
       console.log(`   ✅ Hostel created: ${hData.name} (${hData.code})`);
+    } else {
+      exists.name = hData.name;
+      exists.caretakerName = hData.caretakerName;
+      exists.wardenName = hData.wardenName;
+      exists.blocks = hData.blocks as any;
+      await exists.save();
+      console.log(`   ✅ Hostel updated: ${hData.name} (${hData.code})`);
     }
   }
 
@@ -82,64 +105,89 @@ export async function runSeed(): Promise<void> {
     email: string;
     passwordHash: string;
     role: any;
+    isEmailVerified: boolean;
     eligibilityStatus: any;
     hostelName?: string;
     roomNumber?: string;
     specialization?: string;
+    isDemo?: boolean;
   }> = [
     // Caretaker
     {
       name: 'Suresh Kumar',
-      email: 'caretaker.mandakini@hostel.edu',
+      email: 'caretaker.kalam@iitp.ac.in',
       passwordHash: defaultPass,
       role: 'Caretaker',
+      isEmailVerified: true,
       eligibilityStatus: 'approved',
-      hostelName: 'Mandakini Hostel',
+      hostelName: 'C.V.R Hostel',
+      isDemo: true,
     },
     // Technicians
     {
       name: 'Rajesh Verma',
-      email: 'tech.raj@hostel.edu',
+      email: 'tech.raj@iitp.ac.in',
       passwordHash: defaultPass,
       role: 'Technician',
+      isEmailVerified: true,
       eligibilityStatus: 'approved',
       specialization: 'Electrical & Power Systems',
+      isDemo: true,
     },
     {
       name: 'Amit Singh',
-      email: 'tech.amit@hostel.edu',
+      email: 'tech.amit@iitp.ac.in',
       passwordHash: defaultPass,
       role: 'Technician',
+      isEmailVerified: true,
       eligibilityStatus: 'approved',
       specialization: 'Plumbing & Drainage',
+      isDemo: true,
     },
     // Warden
     {
       name: 'Dr. Anita Roy',
-      email: 'warden.mandakini@hostel.edu',
+      email: 'warden.kalam@iitp.ac.in',
       passwordHash: defaultPass,
       role: 'Warden',
+      isEmailVerified: true,
       eligibilityStatus: 'approved',
-      hostelName: 'Mandakini Hostel',
+      hostelName: 'C.V.R Hostel',
+      isDemo: true,
     },
     // Students
     {
       name: 'Alex Sharma',
-      email: 'alex.sharma@college.edu',
+      email: 'alex.sharma@iitp.ac.in',
       passwordHash: studentPass,
       role: 'Student',
+      isEmailVerified: true,
       eligibilityStatus: 'approved',
-      hostelName: 'Mandakini Hostel',
+      hostelName: 'C.V.R Hostel',
       roomNumber: 'B-304',
+      isDemo: true,
     },
     {
       name: 'Priya Patel',
-      email: 'priya.patel@college.edu',
+      email: 'priya.patel@iitp.ac.in',
       passwordHash: studentPass,
       role: 'Student',
+      isEmailVerified: true,
       eligibilityStatus: 'pending',
-      hostelName: 'Kaveri Hostel',
+      hostelName: 'Kalam Hostel',
       roomNumber: 'A-102',
+      isDemo: true,
+    },
+    {
+      name: 'Ayush',
+      email: 'ayush_2401ec60@iitp.ac.in',
+      passwordHash: studentPass,
+      role: 'Student',
+      isEmailVerified: true,
+      eligibilityStatus: 'approved',
+      hostelName: 'Kalam Hostel',
+      roomNumber: 'A-201',
+      isDemo: true,
     },
   ];
 
@@ -150,18 +198,29 @@ export async function runSeed(): Promise<void> {
     if (!u) {
       u = await User.create(uData);
       console.log(`   ✅ User created: ${u.name} (${u.role})`);
+    } else {
+      let changed = false;
+      if (!u.isEmailVerified) {
+        u.isEmailVerified = true;
+        changed = true;
+      }
+      if (!u.isDemo) {
+        u.isDemo = true;
+        changed = true;
+      }
+      if (changed) await u.save();
     }
     seededUsers[uData.email] = u;
   }
 
   // 4. Seed Initial Sample Complaints
   console.log('📋 Seeding Initial Complaints & Timeline Milestones...');
-  const alex = seededUsers['alex.sharma@college.edu'];
-  const rajesh = seededUsers['tech.raj@hostel.edu'];
-  const suresh = seededUsers['caretaker.mandakini@hostel.edu'];
-  const anita = seededUsers['warden.mandakini@hostel.edu'];
+  const alex = seededUsers['alex.sharma@iitp.ac.in'];
+  const rajesh = seededUsers['tech.raj@iitp.ac.in'];
+  const suresh = seededUsers['caretaker.kalam@iitp.ac.in'];
+  const anita = seededUsers['warden.kalam@iitp.ac.in'];
 
-  if (alex && (await Complaint.countDocuments()) === 0) {
+  if (alex) {
     const complaintsToSeed: Array<{
       referenceId: string;
       student: any;
@@ -179,12 +238,13 @@ export async function runSeed(): Promise<void> {
       repairNotes?: string;
       supportCount: number;
       unresolvedReportsCount: number;
+      isDemo: boolean;
     }> = [
       {
         referenceId: 'HCT-2026-84912',
         student: alex._id,
         studentName: alex.name,
-        hostelName: 'Mandakini Hostel',
+        hostelName: 'C.V.R Hostel',
         block: 'B Block',
         roomNumber: 'B-304',
         category: 'Electrical',
@@ -196,12 +256,13 @@ export async function runSeed(): Promise<void> {
         assignedTechnicianName: rajesh.name,
         supportCount: 4,
         unresolvedReportsCount: 0,
+        isDemo: true,
       },
       {
         referenceId: 'HCT-2026-92104',
         student: alex._id,
         studentName: alex.name,
-        hostelName: 'Mandakini Hostel',
+        hostelName: 'C.V.R Hostel',
         block: 'B Block',
         roomNumber: 'B-304',
         category: 'Plumbing',
@@ -213,12 +274,13 @@ export async function runSeed(): Promise<void> {
         assignedTechnicianName: rajesh.name,
         supportCount: 2,
         unresolvedReportsCount: 0,
+        isDemo: true,
       },
       {
         referenceId: 'HCT-2026-51204',
         student: alex._id,
         studentName: alex.name,
-        hostelName: 'Mandakini Hostel',
+        hostelName: 'C.V.R Hostel',
         block: 'B Block',
         roomNumber: 'B-304',
         category: 'Network / Wi-Fi',
@@ -229,62 +291,116 @@ export async function runSeed(): Promise<void> {
         repairNotes: 'Replaced faulty PoE injector and verified SSID broadcast at 100Mbps.',
         supportCount: 8,
         unresolvedReportsCount: 0,
+        isDemo: true,
+      },
+      {
+        referenceId: 'HCT-2026-34891',
+        student: alex._id,
+        studentName: alex.name,
+        hostelName: 'C.V.R Hostel',
+        block: 'B Block',
+        roomNumber: 'B-304',
+        category: 'Carpentry',
+        title: 'Study Table Drawer Broken Runner',
+        description: 'The right-hand runner of the study table drawer detached. Fixed once but detached again.',
+        priority: 'Low',
+        status: 'Reopened',
+        assignedTechnician: rajesh._id,
+        assignedTechnicianName: rajesh.name,
+        repairNotes: 'Replaced rail screws and lubricated drawer track.',
+        supportCount: 1,
+        unresolvedReportsCount: 0,
+        isDemo: true,
+      },
+      {
+        referenceId: 'HCT-2026-67319',
+        student: alex._id,
+        studentName: alex.name,
+        hostelName: 'C.V.R Hostel',
+        block: 'B Block',
+        roomNumber: 'B-304',
+        category: 'Cleanliness',
+        title: 'Common Washroom Exhaust Fan Jammed',
+        description: 'The second floor common washroom exhaust fan is completely jammed with debris and not rotating.',
+        priority: 'High',
+        status: 'Submitted',
+        supportCount: 5,
+        unresolvedReportsCount: 0,
+        isDemo: true,
       },
     ];
 
     for (const cData of complaintsToSeed) {
-      const c = (await Complaint.create(cData)) as any;
-      console.log(`   ✅ Complaint seeded: ${c.referenceId} (${c.status})`);
+      const existing = await Complaint.findOne({ referenceId: cData.referenceId });
+      if (!existing) {
+        const c: any = await Complaint.create(cData);
+        console.log(`   ✅ Complaint seeded: ${c.referenceId} (${c.status})`);
 
-      // Initial StatusHistory
-      await StatusHistory.create({
-        complaint: c._id,
-        actor: alex._id,
-        actorName: alex.name,
-        actorRole: alex.role,
-        fromStatus: 'Submitted',
-        toStatus: 'Submitted',
-        remarks: 'Complaint registered by student.',
-        timestamp: new Date(Date.now() - 3 * 86400000),
-      });
-
-      if (c.status === 'Assigned' || c.status === 'In Progress' || c.status === 'Resolved') {
+        // Initial StatusHistory
         await StatusHistory.create({
           complaint: c._id,
-          actor: suresh._id,
-          actorName: suresh.name,
-          actorRole: suresh.role,
+          actor: alex._id,
+          actorName: alex.name,
+          actorRole: alex.role,
           fromStatus: 'Submitted',
-          toStatus: 'Assigned',
-          remarks: `Assigned to duty electrician ${rajesh.name}.`,
-          timestamp: new Date(Date.now() - 2 * 86400000),
+          toStatus: 'Submitted',
+          remarks: 'Complaint registered by student.',
+          timestamp: new Date(Date.now() - 3 * 86400000),
         });
-      }
 
-      if (c.status === 'In Progress' || c.status === 'Resolved') {
-        await StatusHistory.create({
-          complaint: c._id,
-          actor: rajesh._id,
-          actorName: rajesh.name,
-          actorRole: rajesh.role,
-          fromStatus: 'Assigned',
-          toStatus: 'In Progress',
-          remarks: 'Technician commenced diagnostic.',
-          timestamp: new Date(Date.now() - 1 * 86400000),
-        });
-      }
+        if (c.status === 'Assigned' || c.status === 'In Progress' || c.status === 'Resolved' || c.status === 'Reopened') {
+          await StatusHistory.create({
+            complaint: c._id,
+            actor: suresh._id,
+            actorName: suresh.name,
+            actorRole: suresh.role,
+            fromStatus: 'Submitted',
+            toStatus: 'Assigned',
+            remarks: `Assigned to duty technician ${rajesh.name}.`,
+            timestamp: new Date(Date.now() - 2 * 86400000),
+          });
+        }
 
-      if (c.status === 'Resolved') {
-        await StatusHistory.create({
-          complaint: c._id,
-          actor: anita._id,
-          actorName: anita.name,
-          actorRole: anita.role,
-          fromStatus: 'Work Completed',
-          toStatus: 'Resolved',
-          remarks: 'Resolution verified and closed by Warden.',
-          timestamp: new Date(),
-        });
+        if (c.status === 'In Progress' || c.status === 'Resolved' || c.status === 'Reopened') {
+          await StatusHistory.create({
+            complaint: c._id,
+            actor: rajesh._id,
+            actorName: rajesh.name,
+            actorRole: rajesh.role,
+            fromStatus: 'Assigned',
+            toStatus: 'In Progress',
+            remarks: 'Technician commenced diagnostic and parts procurement.',
+            timestamp: new Date(Date.now() - 1 * 86400000),
+          });
+        }
+
+        if (c.status === 'Resolved' || c.status === 'Reopened') {
+          await StatusHistory.create({
+            complaint: c._id,
+            actor: anita._id,
+            actorName: anita.name,
+            actorRole: anita.role,
+            fromStatus: 'Work Completed',
+            toStatus: 'Resolved',
+            remarks: 'Resolution verified and closed by Warden.',
+            timestamp: new Date(Date.now() - 12 * 3600000),
+          });
+        }
+
+        if (c.status === 'Reopened') {
+          await StatusHistory.create({
+            complaint: c._id,
+            actor: alex._id,
+            actorName: alex.name,
+            actorRole: alex.role,
+            fromStatus: 'Resolved',
+            toStatus: 'Reopened',
+            remarks: 'Student requested reopen: Runner collapsed again; screw hole stripped.',
+            timestamp: new Date(),
+          });
+        }
+      } else {
+        console.log(`   ℹ️ Complaint already exists: ${existing.referenceId} (${existing.status})`);
       }
     }
   }
@@ -303,8 +419,8 @@ export async function runSeed(): Promise<void> {
   console.log('✨ Seed complete!\n');
 }
 
-// Direct execution when run via `node` / `tsx` / `ts-node`
-if (process.argv[1]?.includes('seed')) {
+// Direct execution when run directly via `node` / `tsx` / `ts-node` (not when imported)
+if (process.argv[1]?.endsWith('seed.ts') || process.argv[1]?.endsWith('seed.js')) {
   runSeed()
     .then(async () => {
       await disconnectDB();

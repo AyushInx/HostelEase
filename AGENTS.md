@@ -44,12 +44,13 @@ At the conclusion of EVERY phase, provide a report containing these 5 sections:
 ## 3. Architecture & Security Invariants
 - **Backend Enforced**: Roles (`Student`, `Caretaker`, `Technician`, `Warden`, `Hostel Admin`) are strictly checked via backend middleware.
 - **Admin Bootstrapping**: First Hostel Admin is created via a documented seed script reading env vars. No public path creates an admin.
-- **Session & Auth Security**: Auth must use `httpOnly`, `secure`, `sameSite` cookie sessions (no tokens in `localStorage`).
+- **Session & Auth Security**: Auth must use `httpOnly`, `secure` (true only when `NODE_ENV=production`), `sameSite` cookie sessions (no tokens in `localStorage`). CSRF protection (token or double-submit) is required for state-changing requests.
 - **Reference Codes vs Access Tokens**: Complaint reference numbers (e.g., `HCT-2026-XXXXX`) are tracking references, never authorization bearer tokens.
 - **Data Privacy**: Endpoints must never leak other students' institutional email addresses, phone numbers, or verification tokens.
 - **Lifecycle Auditing & Transitions**:
   - Rejection is allowed for Caretaker and Warden only, with mandatory reason.
-  - Reopened returns to `Assigned` (same technician if still active, else Caretaker reassigns). Student submits a reopen request; Warden or Caretaker approves it.
+  - Reopened returns to `Assigned` (same technician if still active, else Caretaker reassigns). Student submits a reopen request; Warden or Caretaker approves it. If rejected, ticket stays `Resolved`, student is notified with reason, and an audit entry is written.
+  - Transition `Work Completed` → `In Progress` is allowed for Warden only, with mandatory reason.
   - Every status transition must generate an append-only status history and audit record with actor identity and timestamp.
 - **Unresolved Reports**: Enforce unique index on `(complaint, student)`.
-- **Escalation Service**: Escalation logic runs server-side, driven by background workers, and must be strictly idempotent across restarts. Evaluates two SLA types per priority/category: acknowledgment deadline and resolution deadline. Each has Tier 1 (→ Warden) and Tier 2 (→ Hostel Admin).
+- **Escalation Service**: Escalation logic runs server-side, driven by background workers, and must be strictly idempotent across restarts. Evaluates two SLA types per priority/category: acknowledgment deadline (stops at `Seen`) and resolution deadline. Each has Tier 1 (→ Warden) and Tier 2 (→ Hostel Admin, triggering after a configurable grace period following Tier 1).

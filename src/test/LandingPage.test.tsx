@@ -17,8 +17,8 @@ describe('LandingPage', () => {
 
   it('renders the application title and pitch', () => {
     renderLandingPage();
-    expect(screen.getByRole('heading', { name: /Hostel Complaint Tracker/i })).toBeInTheDocument();
-    expect(screen.getByText(/Complaints are currently scattered across WhatsApp/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Every issue deserves a resolution/i })).toBeInTheDocument();
+    expect(screen.getByText(/Report complaints, track progress/i)).toBeInTheDocument();
   });
 
   it('renders both Student and Staff entry portals', () => {
@@ -40,10 +40,8 @@ describe('LandingPage', () => {
     expect(registerLink).toHaveAttribute('href', '/login/student?mode=register');
   });
 
-  it('prominently displays the Phase 1 mock evaluation credentials guide', () => {
+  it('does not display mock credentials on the landing page', () => {
     renderLandingPage();
-    expect(screen.getByText(/Phase 1 Mock Evaluation Credentials/i)).toBeInTheDocument();
-    expect(screen.getByText(/alex.sharma@college.edu/i)).toBeInTheDocument();
-    expect(screen.getByText(/admin@campus.edu/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Phase 1 Mock Evaluation Credentials/i)).not.toBeInTheDocument();
   });
 });

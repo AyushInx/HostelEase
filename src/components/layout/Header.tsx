@@ -28,13 +28,13 @@ export const Header: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-base tracking-tight text-slate-900">
-                Hostel Complaint Tracker
+                HostelEase
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">
-                Prototype
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200">
+                BETA
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 font-medium">Campus Maintenance & SLA Audit</p>
+            <p className="text-[11px] text-slate-500 font-medium">Campus Maintenance & Resolution</p>
           </div>
         </Link>
 

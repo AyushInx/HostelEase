@@ -1,7 +1,9 @@
 import { Types } from 'mongoose';
 import { Complaint, IComplaint, generateTicketReference, ComplaintPriority, ComplaintStatus } from '../models/Complaint';
 import { StatusHistory, IStatusHistory } from '../models/StatusHistory';
+import { Assignment, IAssignment } from '../models/Assignment';
 import { User } from '../models/User';
+import { Notification } from '../models/Notification';
 import { AuthUserPayload } from '../middleware/auth';
 import { AppError } from '../middleware/error';
 import { auditService } from './audit.service';
@@ -160,9 +162,10 @@ export class ComplaintService {
 
     const fromStatus = complaint.status;
     complaint.status = 'Seen';
+    complaint.acknowledgedAt = new Date();
     await complaint.save();
 
-    await this.recordTransition(complaint, user, fromStatus, 'Seen', 'Ticket acknowledged by Caretaker.');
+    await this.recordTransition(complaint, user, fromStatus, 'Seen', 'Ticket acknowledged by Caretaker (Acknowledgment SLA clock stopped at Seen).');
     return complaint;
   }
 
@@ -189,12 +192,33 @@ export class ComplaintService {
     }
 
     const fromStatus = complaint.status;
+    const fromTechId = complaint.assignedTechnician;
+    const fromTechName = complaint.assignedTechnicianName;
+    const isReassignment = Boolean(fromTechId && fromTechId.toString() !== tech._id.toString());
+
     complaint.status = 'Assigned';
     complaint.assignedTechnician = tech._id;
     complaint.assignedTechnicianName = tech.name;
     await complaint.save();
 
-    const remark = `Assigned to technician ${tech.name}${notes ? `. Notes: ${notes}` : ''}`;
+    // SPEC INVARIANT: Assignment/reassignment records (actor, from, to, reason)
+    const assignmentRecord = new Assignment({
+      complaint: complaint._id,
+      actor: new Types.ObjectId(user.id),
+      actorName: user.name,
+      actorRole: user.role,
+      fromTechnician: fromTechId,
+      fromTechnicianName: fromTechName,
+      toTechnician: tech._id,
+      toTechnicianName: tech.name,
+      reason: notes || (isReassignment ? `Reassigned from ${fromTechName} to ${tech.name}` : `Initial assignment to ${tech.name}`),
+      assignedAt: new Date(),
+    });
+    await assignmentRecord.save();
+
+    const remark = isReassignment
+      ? `Reassigned from ${fromTechName} to ${tech.name}${notes ? `. Reason: ${notes}` : ''}`
+      : `Assigned to technician ${tech.name}${notes ? `. Notes: ${notes}` : ''}`;
     await this.recordTransition(complaint, user, fromStatus, 'Assigned', remark);
     return complaint;
   }
@@ -243,7 +267,7 @@ export class ComplaintService {
   }
 
   // Warden: Confirm Resolution (Work Completed -> Resolved)
-  async confirmResolution(complaintId: string, user: AuthUserPayload): Promise<IComplaint> {
+  async confirmResolution(complaintId: string, notes: string | undefined, user: AuthUserPayload): Promise<IComplaint> {
     if (user.role !== 'Warden' && user.role !== 'Hostel Admin') {
       throw new AppError('Only the Hostel Warden or Admin can confirm final resolution.', 403);
     }
@@ -253,11 +277,58 @@ export class ComplaintService {
       throw new AppError(`Cannot confirm resolution on ticket in '${complaint.status}' status (must be 'Work Completed')`, 400);
     }
 
+    if (notes !== undefined && notes !== null && notes.trim().length > 0 && notes.trim().length < 5) {
+      throw new AppError('Resolution notes must be at least 5 characters.', 400);
+    }
+
+    const resolutionNotes = notes?.trim() || 'Final resolution verified and approved by staff.';
     const fromStatus = complaint.status;
     complaint.status = 'Resolved';
+    complaint.resolutionNotes = resolutionNotes;
     await complaint.save();
 
-    await this.recordTransition(complaint, user, fromStatus, 'Resolved', 'Final resolution verified and approved by Warden.');
+    await this.recordTransition(
+      complaint,
+      user,
+      fromStatus,
+      'Resolved',
+      `Final resolution verified and approved by ${user.role}. Notes: ${resolutionNotes}`
+    );
+    return complaint;
+  }
+
+  // Retrieve assignment history records for a complaint
+  async getAssignments(complaintId: string, user: AuthUserPayload): Promise<IAssignment[]> {
+    const complaint = await this.findComplaintAndVerifyJurisdiction(complaintId, user);
+    return Assignment.find({ complaint: complaint._id }).sort({ assignedAt: 1 });
+  }
+
+  // Warden ONLY: Return Work Completed -> In Progress (Mandatory Reason)
+  async returnWorkInProgress(complaintId: string, reason: string, user: AuthUserPayload): Promise<IComplaint> {
+    if (user.role !== 'Warden' && user.role !== 'Hostel Admin') {
+      throw new AppError('SPEC INVARIANT: Transition Work Completed -> In Progress is restricted to Warden only.', 403);
+    }
+
+    if (!reason || reason.trim().length < 5) {
+      throw new AppError('Mandatory reason (minimum 5 characters) is required to return work to In Progress.', 400);
+    }
+
+    const complaint = await this.findComplaintAndVerifyJurisdiction(complaintId, user);
+    if (complaint.status !== 'Work Completed') {
+      throw new AppError(`Cannot return ticket to 'In Progress' from '${complaint.status}' status (must be 'Work Completed').`, 400);
+    }
+
+    const fromStatus = complaint.status;
+    complaint.status = 'In Progress';
+    await complaint.save();
+
+    await this.recordTransition(
+      complaint,
+      user,
+      fromStatus,
+      'In Progress',
+      `Work marked unsatisfactory by Warden and returned to In Progress. Reason: ${reason.trim()}`
+    );
     return complaint;
   }
 
@@ -336,6 +407,46 @@ export class ComplaintService {
       ? `Reopening approved. Returned to Assigned with original technician ${complaint.assignedTechnicianName}.`
       : 'Reopening approved. Technician reassignment required.';
     await this.recordTransition(complaint, user, fromStatus, 'Assigned', remark);
+    return complaint;
+  }
+
+  // Warden or Caretaker: Reject Reopen Request (Reopened -> Resolved, stays Resolved, student notified with reason, audit written)
+  async rejectReopen(complaintId: string, reason: string, user: AuthUserPayload): Promise<IComplaint> {
+    if (user.role !== 'Warden' && user.role !== 'Caretaker' && user.role !== 'Hostel Admin') {
+      throw new AppError('Rejection of reopen requests is restricted to Warden or Caretaker.', 403);
+    }
+
+    if (!reason || reason.trim().length < 5) {
+      throw new AppError('Rejection of reopen request requires a mandatory reason (minimum 5 characters).', 400);
+    }
+
+    const complaint = await this.findComplaintAndVerifyJurisdiction(complaintId, user);
+    if (complaint.status !== 'Reopened') {
+      throw new AppError(`Cannot reject reopen request: Ticket is not in 'Reopened' state (current: '${complaint.status}').`, 400);
+    }
+
+    const fromStatus = complaint.status;
+    complaint.status = 'Resolved';
+    await complaint.save();
+
+    await this.recordTransition(
+      complaint,
+      user,
+      fromStatus,
+      'Resolved',
+      `Reopen request rejected by ${user.role}. Reason: ${reason.trim()}`
+    );
+
+    // SPEC INVARIANT: student notified with reason
+    await Notification.create({
+      recipient: complaint.student,
+      type: 'reopen_rejected',
+      title: 'Reopen Request Rejected',
+      message: `Your reopen request for ticket ${complaint.referenceId} was rejected by ${user.role}. Reason: ${reason.trim()}`,
+      link: `/complaints/${complaint._id}`,
+      readStatus: false,
+    });
+
     return complaint;
   }
 

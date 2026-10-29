@@ -50,6 +50,43 @@ export class StaffController {
       next(err);
     }
   }
+
+  async getStudents(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const students = await staffService.getStudents(req.user!);
+      res.status(200).json({ success: true, data: students });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateStudentEligibility(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { status, reason } = req.body;
+      const student = await staffService.updateStudentEligibility(getId(req), status, reason, req.user!);
+      res.status(200).json({
+        success: true,
+        data: student,
+        message: `Student eligibility updated to ${student.eligibilityStatus}`,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async changeRole(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { role } = req.body;
+      const staff = await staffService.changeStaffRole(getId(req), role, req.user!);
+      res.status(200).json({
+        success: true,
+        data: staff,
+        message: `Staff role changed to ${staff.role}`,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const staffController = new StaffController();

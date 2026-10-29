@@ -22,13 +22,17 @@ export function errorHandler(
 ): void {
   // 1. Zod Validation Errors
   if (err instanceof ZodError || err.name === 'ZodError') {
-    const formattedErrors = (err.errors || []).map((e: any) => ({
+    const issues = (err.issues && err.issues.length ? err.issues : err.errors) || [];
+    const formattedErrors = issues.map((e: any) => ({
       path: (e.path || []).join('.'),
       message: e.message,
     }));
+    const errorMsg = formattedErrors.length > 0
+      ? `Validation failed: ${formattedErrors.map((e: any) => e.message).join('; ')}`
+      : 'Validation failed';
     res.status(400).json({
       success: false,
-      error: 'Validation failed',
+      error: errorMsg,
       details: formattedErrors,
     });
     return;

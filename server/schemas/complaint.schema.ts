@@ -27,6 +27,14 @@ export const reopenRequestSchema = z.object({
   reason: z.string().min(5, 'Reason for reopening the ticket is required').trim(),
 });
 
+export const rejectReopenSchema = z.object({
+  reason: z.string().min(5, 'Rejection reason is mandatory and must be at least 5 characters').trim(),
+});
+
+export const returnWorkInProgressSchema = z.object({
+  reason: z.string().min(5, 'Reason for returning work to In Progress is mandatory (min 5 characters)').trim(),
+});
+
 export const reprioritizeSchema = z.object({
   priority: z.enum(['Low', 'Medium', 'High', 'Emergency']),
 });

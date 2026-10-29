@@ -125,8 +125,10 @@ export interface IComplaintService {
   startWork(complaintId: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
   markWorkCompleted(complaintId: string, repairNotes: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
   confirmResolution(complaintId: string, resolutionRemarks: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  returnWorkInProgress(complaintId: string, mandatoryReason: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
   rejectComplaint(complaintId: string, mandatoryReason: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
   approveReopen(complaintId: string, technicianName: string | undefined, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
+  rejectReopen(complaintId: string, mandatoryReason: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
   reprioritizeComplaint(complaintId: string, newPriority: ComplaintPriority, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
   escalateComplaint(complaintId: string, escalationNotes: string, actorId: string, actorName: string, actorRole: string): Promise<Complaint>;
 }

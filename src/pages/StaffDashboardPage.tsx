@@ -16,8 +16,8 @@ import type {
   StaffComplaintFilters 
 } from '../types/complaint';
 import type { StaffAccount, HostelRecord } from '../services/mockStaffAdminService';
-import { complaintService } from '../services/mockComplaintService';
-import { staffAdminService } from '../services/mockStaffAdminService';
+import { apiComplaintService as complaintService } from '../services/apiComplaintService';
+import { staffAdminService } from '../services/apiStaffAdminService';
 import { useAuth } from '../context/AuthContext';
 import { StaffComplaintsTable } from '../components/staff/StaffComplaintsTable';
 import { 
@@ -151,20 +151,6 @@ export const StaffDashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6 py-2">
-      {/* Security Disclaimer Banner */}
-      <div className="p-3.5 bg-slate-900 text-slate-200 rounded-xl text-xs flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>
-            <strong className="text-white">Authorization Adapter Active:</strong> Evaluated via central permission map <code className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded font-mono">ROLE_PERMISSIONS</code>.
-            <span className="text-slate-400 ml-1.5 hidden sm:inline">(Frontend demo; authentic role & boundary verification will be enforced on the backend in Phase 4).</span>
-          </span>
-        </div>
-        <Badge variant={getRoleBadgeVariant(user?.role)} size="sm">
-          {user?.role}
-        </Badge>
-      </div>
-
       {/* Staff Header Profile */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-7 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1">

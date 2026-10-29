@@ -37,7 +37,10 @@ export interface IComplaint extends Document {
   assignedTechnicianName?: string;
   rejectionReason?: string;
   repairNotes?: string;
+  resolutionNotes?: string;
+  acknowledgedAt?: Date;
   escalationLevel: 'none' | 'tier1_warden' | 'tier2_admin';
+  isDemo?: boolean;
   supportCount: number;
   unresolvedReportsCount: number;
   createdAt: Date;
@@ -89,6 +92,8 @@ const ComplaintSchema = new Schema<IComplaint>(
     assignedTechnicianName: { type: String, trim: true },
     rejectionReason: { type: String, trim: true },
     repairNotes: { type: String, trim: true },
+    resolutionNotes: { type: String, trim: true },
+    acknowledgedAt: { type: Date },
     escalationLevel: { 
       type: String, 
       enum: ['none', 'tier1_warden', 'tier2_admin'],
@@ -96,6 +101,7 @@ const ComplaintSchema = new Schema<IComplaint>(
     },
     supportCount: { type: Number, default: 0, min: 0 },
     unresolvedReportsCount: { type: Number, default: 0, min: 0 },
+    isDemo: { type: Boolean, default: false, index: true },
   },
   { 
     timestamps: true,

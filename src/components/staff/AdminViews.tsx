@@ -98,7 +98,9 @@ export const HostelConfigView: React.FC = () => {
               </div>
               <div>
                 <span className="text-slate-400 font-medium">Configured Blocks:</span>
-                <p className="font-semibold text-slate-800">{h.blocks.length} Residential Blocks</p>
+                <p className="font-semibold text-slate-800">
+                  {h.blocks.length} {h.blocks.length === 1 ? 'Residential Block' : 'Residential Blocks'}
+                </p>
               </div>
             </div>
 
@@ -134,7 +136,7 @@ export const HostelConfigView: React.FC = () => {
               <div key={blk.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                 <span className="font-bold text-sm text-slate-900">{blk.name}</span>
                 <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                  <span>{blk.floors} Floors</span>
+                  <span>{blk.floors} Floors {blk.floors === 8 ? '(0-7)' : ''}</span>
                   <span>{blk.roomsCount} Rooms</span>
                 </div>
               </div>
@@ -219,7 +221,7 @@ export const StaffManagementView: React.FC = () => {
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState<UserRole>('Caretaker');
-  const [newHostel, setNewHostel] = useState('Mandakini Hostel');
+  const [newHostel, setNewHostel] = useState('C.V.R Hostel');
   const [newSpec, setNewSpec] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -362,7 +364,7 @@ export const StaffManagementView: React.FC = () => {
                 label="Staff Institutional Email"
                 required
                 type="email"
-                placeholder="e.g. ramesh.c@hostel.edu"
+                placeholder="e.g. ramesh.c@iitp.ac.in"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
               />
@@ -396,9 +398,10 @@ export const StaffManagementView: React.FC = () => {
                     onChange={(e) => setNewHostel(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-lg border border-slate-300 bg-white"
                   >
-                    <option value="Mandakini Hostel">Mandakini Hostel</option>
-                    <option value="Kaveri Hostel">Kaveri Hostel</option>
-                    <option value="Ganga Hostel">Ganga Hostel</option>
+                    <option value="C.V.R Hostel">C.V.R Hostel</option>
+                    <option value="Kalam Hostel">Kalam Hostel</option>
+                    <option value="Aryabhatta Hostel">Aryabhatta Hostel</option>
+                    <option value="Asima Hostel">Asima Hostel</option>
                   </select>
                 </div>
               )}

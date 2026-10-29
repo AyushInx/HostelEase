@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { complaintController } from '../controllers/complaint.controller';
-import { requireAuth, requireRoles } from '../middleware/auth';
+import { requireAuth, requireRoles, requireApprovedEligibility, requireComplaintAccess } from '../middleware/auth';
 import { validateRequest } from '../middleware/validate';
 import {
   createComplaintSchema,
@@ -8,6 +8,8 @@ import {
   completeWorkSchema,
   rejectComplaintSchema,
   reopenRequestSchema,
+  rejectReopenSchema,
+  returnWorkInProgressSchema,
   reprioritizeSchema,
 } from '../schemas/complaint.schema';
 
@@ -18,12 +20,13 @@ router.post(
   '/',
   requireAuth,
   requireRoles('Student'),
+  requireApprovedEligibility,
   validateRequest({ body: createComplaintSchema }),
   (req, res, next) => complaintController.create(req, res, next)
 );
 
 router.get('/', requireAuth, (req, res, next) => complaintController.list(req, res, next));
-router.get('/:id', requireAuth, (req, res, next) => complaintController.detail(req, res, next));
+router.get('/:id', requireAuth, requireComplaintAccess, (req, res, next) => complaintController.detail(req, res, next));
 
 // Caretaker endpoints
 router.post(
@@ -39,6 +42,13 @@ router.post(
   requireRoles('Caretaker', 'Hostel Admin'),
   validateRequest({ body: assignTechnicianSchema }),
   (req, res, next) => complaintController.assign(req, res, next)
+);
+
+router.get(
+  '/:id/assignments',
+  requireAuth,
+  requireComplaintAccess,
+  (req, res, next) => complaintController.getAssignments(req, res, next)
 );
 
 // Technician endpoints
@@ -65,6 +75,15 @@ router.post(
   (req, res, next) => complaintController.confirmResolution(req, res, next)
 );
 
+// Work Completed -> In Progress (Warden only, mandatory reason)
+router.post(
+  '/:id/return-in-progress',
+  requireAuth,
+  requireRoles('Warden', 'Hostel Admin'),
+  validateRequest({ body: returnWorkInProgressSchema }),
+  (req, res, next) => complaintController.returnWorkInProgress(req, res, next)
+);
+
 router.post(
   '/:id/reprioritize',
   requireAuth,
@@ -82,7 +101,7 @@ router.post(
   (req, res, next) => complaintController.reject(req, res, next)
 );
 
-// Reopen: Student requests, Warden or Caretaker approves
+// Reopen: Student requests, Warden or Caretaker approves/rejects
 router.post(
   '/:id/reopen-request',
   requireAuth,
@@ -96,6 +115,15 @@ router.post(
   requireAuth,
   requireRoles('Warden', 'Caretaker', 'Hostel Admin'),
   (req, res, next) => complaintController.approveReopen(req, res, next)
+);
+
+// Rejected reopen request: ticket stays Resolved, student notified with reason, audit entry written
+router.post(
+  '/:id/reject-reopen',
+  requireAuth,
+  requireRoles('Warden', 'Caretaker', 'Hostel Admin'),
+  validateRequest({ body: rejectReopenSchema }),
+  (req, res, next) => complaintController.rejectReopen(req, res, next)
 );
 
 export default router;

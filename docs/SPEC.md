@@ -101,7 +101,7 @@ All permissions enforced server-side based on verified session claims and resour
    - Rejection allowed with mandatory reason.
    - Review and approve student reopen requests.
    - Manual escalation.
-   - Review `Work Completed` and confirm final resolution (`Resolved`).
+   - Review `Work Completed` and confirm final resolution (`Resolved`) or return to `In Progress` with mandatory reason.
 4. **Hostel Admin**:
    - Cross-hostel administrative oversight.
    - Hostel, block, and staff configuration management.
@@ -116,22 +116,28 @@ Valid transitions are strictly enforced by backend domain logic:
 
 ```
 [Submitted] ──> [Seen] ──> [Assigned] ──> [In Progress] ──> [Work Completed] ──> [Resolved]
-      │           │            │               │                                │
-      ▼           ▼            ▼               ▼                                │
-  [Rejected]  [Rejected]   [Rejected]     [Rejected]                            │
-  (Caretaker / Warden only, with mandatory reason)                              │
-                                                                                ▼
-                                                                     [Reopen Requested]
-                                                                        (by Student)
-                                                                                │
-                                                      (Approved by Warden/Caretaker)
-                                                                                ▼
-                                                                        [Assigned]
-                                    (Same tech if active, else Caretaker reassigns)
+      │           │            │               │                 │                  │
+      ▼           ▼            ▼               ▼                 │                  │
+  [Rejected]  [Rejected]   [Rejected]     [Rejected]             │                  │
+  (Caretaker / Warden only, with mandatory reason)               │                  │
+                                                                 │                  │
+                  [In Progress] <────────────────────────────────┘                  │
+                  (Warden only, mandatory reason)                                   │
+                                                                                    ▼
+                                                                         [Reopen Requested]
+                                                                            (by Student)
+                                                                            │          │
+                                                        (Approved by W/C)   ▼          ▼  (Rejected by Warden/Caretaker)
+                                                                        [Assigned]    [Resolved]
+                                            (Same tech if active, else Caretaker)     (stays Resolved, student notified
+                                                                                       with reason, audit entry written)
 ```
 
 - **Rejection**: Allowed for **Caretaker** and **Warden** only, with mandatory reason and generates an immutable audit record.
-- **Reopening**: Student submits a reopen request after resolution if the problem persists. Approved by Warden or Caretaker. Upon approval, returns to `Assigned` (same technician if still active, else Caretaker reassigns).
+- **Work Completed → In Progress**: Allowed for **Warden only** with a mandatory reason (e.g. unsatisfactory or incomplete work).
+- **Reopening**: Student submits a reopen request after resolution if the problem persists. Approved or rejected by Warden or Caretaker:
+  - **Approved**: Returns to `Assigned` (same technician if still active, else Caretaker reassigns).
+  - **Rejected**: Ticket stays `Resolved`, student is notified with the mandatory reason, and an immutable audit entry is written.
 - **Immutable Status History**: Every transition writes an append-only entry:
   - `actorId` (User reference)
   - `actorRole`
@@ -145,11 +151,11 @@ Valid transitions are strictly enforced by backend domain logic:
 ## 7. Escalation Engine
 - **Server-Side Scheduler Only**: Run via server background worker/cron (never driven by frontend timers).
 - **Two SLA Types Configured per Priority & Category**:
-  1. **Acknowledgment Deadline**: Time elapsed from `Submitted` to acknowledgment (`Seen`/`Assigned`).
+  1. **Acknowledgment Deadline**: Time elapsed from `Submitted` to acknowledgment (`Seen`). The SLA clock stops once the ticket moves to `Seen`.
   2. **Resolution Deadline**: Time elapsed from `Submitted` to resolution (`Resolved`).
 - **Escalation Path (Tiers)**:
   - **Tier 1**: Missed deadline escalates to **Warden**.
-  - **Tier 2**: Continued breach escalates to **Hostel Admin**.
+  - **Tier 2**: Continued breach escalates to **Hostel Admin**, triggering after a configurable grace period following Tier 1.
 - **Idempotency & Resilience**:
   - Each missed deadline creates exactly ONE escalation record + audit event + notification per tier.
   - Safe against server restarts and concurrent cron ticks.
@@ -172,7 +178,8 @@ Valid transitions are strictly enforced by backend domain logic:
 ---
 
 ## 9. Security Requirements & Hardening
-- **Authentication & Sessions**: `httpOnly`, `secure`, `sameSite` cookie sessions (no tokens in `localStorage`). Argon2 / bcrypt password hashing; strict input validation on client and server.
+- **Authentication & Sessions**: `httpOnly`, `secure` (true only when `NODE_ENV=production`), `sameSite` cookie sessions (no tokens in `localStorage`). Argon2 / bcrypt password hashing; strict input validation on client and server.
+- **CSRF Protection**: CSRF protection (anti-CSRF token or double-submit cookie pattern) enforced for all state-changing requests (`POST`, `PUT`, `PATCH`, `DELETE`).
 - **Rate Limiting**: Brute-force protection on `/auth/login`, `/auth/verify-otp`, `/auth/resend-otp`.
 - **OTP Safety**: Bounded OTP attempts (max 5), short expiry (10-15 mins), cryptographic random generation.
 - **Authorization & Scoping**:

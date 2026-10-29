@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: hostelease-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npx tsx server/server.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: OTP_SECRET
+        generateValue: true
+      - key: INITIAL_ADMIN_NAME
+        value: Campus Chief Admin
+      - key: INITIAL_ADMIN_EMAIL
+        value: admin@iitp.ac.in
+      - key: INITIAL_ADMIN_PASSWORD
+        value: CampusAdmin2026!
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: HostelEase <onboarding@resend.dev>
+      - key: CLIENT_ORIGIN
+        sync: false
+

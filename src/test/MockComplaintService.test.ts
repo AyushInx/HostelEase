@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { complaintService } from '../services/mockComplaintService';
 
 describe('mockComplaintService (Phase 2)', () => {
   const studentId = 'usr_mock_std_001'; // Alex Sharma
-  const hostelName = 'Mandakini Hostel';
+  const hostelName = 'C.V.R Hostel';
 
   it('calculates overview metric counts correctly', async () => {
     const stats = await complaintService.getOverviewStats(studentId, hostelName);
@@ -35,7 +35,7 @@ describe('mockComplaintService (Phase 2)', () => {
       title: 'Water filter cartridge leaking',
       category: 'Plumbing',
       priority: 'High',
-      hostelName: 'Mandakini Hostel',
+      hostelName: 'C.V.R Hostel',
       block: 'B Block',
       roomNumber: 'B-304',
       description: 'Under-sink RO filter is leaking clean water onto floor.',
@@ -50,12 +50,12 @@ describe('mockComplaintService (Phase 2)', () => {
   });
 
   it('strictly scopes community feed to student designated hostel', async () => {
-    const feed = await complaintService.getCommunityFeed('Mandakini Hostel');
+    const feed = await complaintService.getCommunityFeed('C.V.R Hostel');
     expect(feed.length).toBeGreaterThan(0);
-    // Every complaint in feed must belong to Mandakini Hostel
-    expect(feed.every((c) => c.hostelName === 'Mandakini Hostel')).toBe(true);
+    // Every complaint in feed must belong to C.V.R Hostel
+    expect(feed.every((c) => c.hostelName === 'C.V.R Hostel')).toBe(true);
 
-    // Verify Kaveri Hostel complaint is excluded
+    // Verify Kalam Hostel complaint is excluded
     expect(feed.some((c) => c.referenceId === 'HCT-2026-11842')).toBe(false);
   });
 

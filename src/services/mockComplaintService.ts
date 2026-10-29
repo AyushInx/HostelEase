@@ -24,7 +24,7 @@ import { staffAdminService } from './mockStaffAdminService';
  * =========================================================================
  */
 
-const STORAGE_KEY = 'hct_mock_complaints_v1';
+const STORAGE_KEY = 'hct_mock_complaints_v2';
 
 // Seed complaints for initial demo & testing
 const INITIAL_MOCK_COMPLAINTS: Complaint[] = [
@@ -33,7 +33,7 @@ const INITIAL_MOCK_COMPLAINTS: Complaint[] = [
     referenceId: 'HCT-2026-84912',
     studentId: 'usr_mock_std_001', // Alex Sharma
     studentName: 'Alex Sharma',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'C.V.R Hostel',
     block: 'B Block',
     roomNumber: 'B-304',
     category: 'Electrical',
@@ -104,7 +104,7 @@ const INITIAL_MOCK_COMPLAINTS: Complaint[] = [
     referenceId: 'HCT-2026-92147',
     studentId: 'usr_mock_std_001', // Alex Sharma
     studentName: 'Alex Sharma',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'C.V.R Hostel',
     block: 'B Block',
     roomNumber: 'B-304',
     category: 'Plumbing',
@@ -134,7 +134,7 @@ const INITIAL_MOCK_COMPLAINTS: Complaint[] = [
     referenceId: 'HCT-2026-51204',
     studentId: 'usr_mock_std_001', // Alex Sharma
     studentName: 'Alex Sharma',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'C.V.R Hostel',
     block: 'B Block',
     roomNumber: 'B-304',
     category: 'Internet/WiFi',
@@ -205,7 +205,7 @@ const INITIAL_MOCK_COMPLAINTS: Complaint[] = [
     referenceId: 'HCT-2026-34891',
     studentId: 'usr_mock_std_001', // Alex Sharma
     studentName: 'Alex Sharma',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'C.V.R Hostel',
     block: 'B Block',
     roomNumber: 'B-304',
     category: 'Carpentry',
@@ -260,7 +260,7 @@ const INITIAL_MOCK_COMPLAINTS: Complaint[] = [
     referenceId: 'HCT-2026-67319',
     studentId: 'usr_mock_std_002', // Priya Patel (Peer student in same hostel)
     studentName: 'Priya Patel',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'C.V.R Hostel',
     block: 'A Block',
     roomNumber: 'A-Common',
     category: 'Cleanliness',
@@ -301,12 +301,12 @@ const INITIAL_MOCK_COMPLAINTS: Complaint[] = [
     referenceId: 'HCT-2026-11842',
     studentId: 'usr_mock_std_999',
     studentName: 'Other Hostel Resident',
-    hostelName: 'Kaveri Hostel',
+    hostelName: 'Kalam Hostel',
     block: 'C Block',
     roomNumber: 'C-201',
     category: 'Civil',
-    title: 'Kaveri Hostel Window Glass Cracked',
-    description: 'Window glass cracked in Kaveri hostel.',
+    title: 'Kalam Hostel Window Glass Cracked',
+    description: 'Window glass cracked in Kalam hostel.',
     priority: 'Low',
     status: 'Submitted',
     createdAt: '2026-10-24T10:00:00Z',
@@ -356,12 +356,25 @@ class MockComplaintService implements IComplaintService {
     return `HCT-2026-${randomDigits}`;
   }
 
+  private matchesStudent(c: Complaint, studentId?: string): boolean {
+    if (!studentId) return true;
+    if (c.studentId === studentId) return true;
+    // For demo/seeded accounts: if Alex Sharma is logged in (via mock ID, MongoDB ObjectId, or name),
+    // ensure Alex's demo complaints match regardless of the exact ID representation.
+    const isAlexTarget = c.studentId === 'usr_mock_std_001' || c.studentName === 'Alex Sharma';
+    const isOtherKnownStudent = studentId === 'usr_mock_std_002' || studentId.includes('priya') || studentId === 'usr_mock_std_ayush' || studentId.includes('ayush');
+    if (isAlexTarget && !isOtherKnownStudent) {
+      return true;
+    }
+    return false;
+  }
+
   async getOverviewStats(studentId?: string, hostelName?: string): Promise<ComplaintOverviewStats> {
     await this.delay(100);
     this.loadFromStorage();
 
     const filtered = this.complaints.filter((c) => {
-      if (studentId && c.studentId !== studentId) return false;
+      if (studentId && !this.matchesStudent(c, studentId)) return false;
       if (hostelName && c.hostelName !== hostelName) return false;
       return true;
     });
@@ -381,7 +394,7 @@ class MockComplaintService implements IComplaintService {
     await this.delay(150);
     this.loadFromStorage();
 
-    let list = this.complaints.filter((c) => c.studentId === studentId);
+    let list = this.complaints.filter((c) => this.matchesStudent(c, studentId));
 
     if (filters) {
       if (filters.search && filters.search.trim()) {
@@ -917,6 +930,50 @@ class MockComplaintService implements IComplaintService {
     return JSON.parse(JSON.stringify(target));
   }
 
+  async returnWorkInProgress(
+    complaintId: string,
+    mandatoryReason: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(250);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    if (!mandatoryReason || mandatoryReason.trim().length < 5) {
+      throw new Error('Mandatory reason (min 5 chars) is required to return work to In Progress');
+    }
+
+    const prev = target.status;
+    target.status = 'In Progress';
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'In Progress',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: `Work returned to In Progress by Warden. Reason: ${mandatoryReason.trim()}`,
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'WORK_RETURNED_IN_PROGRESS',
+      'Complaint',
+      target.referenceId,
+      `Warden ${actorName} returned work to In Progress. Reason: ${mandatoryReason.trim()}`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
   async rejectComplaint(
     complaintId: string,
     mandatoryReason: string,
@@ -1002,6 +1059,54 @@ class MockComplaintService implements IComplaintService {
       'Complaint',
       target.referenceId,
       `Approved reopen request. Returned to Assigned (${target.assignedTechnicianName || 'unassigned'})`
+    );
+
+    this.saveToStorage();
+    return JSON.parse(JSON.stringify(target));
+  }
+
+  async rejectReopen(
+    complaintId: string,
+    mandatoryReason: string,
+    actorId: string,
+    actorName: string,
+    actorRole: string
+  ): Promise<Complaint> {
+    await this.delay(250);
+    this.loadFromStorage();
+    const target = this.complaints.find((c) => c.id === complaintId);
+    if (!target) throw new Error('Complaint not found');
+
+    if (!mandatoryReason || mandatoryReason.trim().length < 5) {
+      throw new Error('Mandatory reason (min 5 chars) is required to reject a reopen request');
+    }
+
+    const prev = target.status;
+    target.status = 'Resolved';
+    if (target.reopenRequest) {
+      target.reopenRequest.status = 'rejected';
+      (target.reopenRequest as any).rejectionReason = mandatoryReason.trim();
+    }
+    target.updatedAt = new Date().toISOString();
+
+    target.history.push({
+      id: `hist_${Date.now()}`,
+      fromStatus: prev,
+      toStatus: 'Resolved',
+      actorId,
+      actorName,
+      actorRole,
+      timestamp: target.updatedAt,
+      remarks: `Reopen request rejected by ${actorRole}. Reason: ${mandatoryReason.trim()}`,
+    });
+
+    staffAdminService.appendAuditLog(
+      actorName,
+      actorRole,
+      'REOPEN_REJECTED',
+      'Complaint',
+      target.referenceId,
+      `Reopen request rejected by ${actorRole}. Reason: ${mandatoryReason.trim()}`
     );
 
     this.saveToStorage();

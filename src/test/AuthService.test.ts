@@ -8,7 +8,7 @@ describe('mockAuthService', () => {
 
   it('authenticates valid student credentials', async () => {
     const result = await authService.loginStudent({
-      email: 'alex.sharma@college.edu',
+      email: 'alex.sharma@iitp.ac.in',
       password: 'mock-student-pass',
     });
 
@@ -20,7 +20,7 @@ describe('mockAuthService', () => {
 
   it('rejects student with invalid password', async () => {
     const result = await authService.loginStudent({
-      email: 'alex.sharma@college.edu',
+      email: 'alex.sharma@iitp.ac.in',
       password: 'wrong-password',
     });
 
@@ -30,7 +30,7 @@ describe('mockAuthService', () => {
 
   it('rejects staff email in student login', async () => {
     const result = await authService.loginStudent({
-      email: 'caretaker.mandakini@hostel.edu',
+      email: 'caretaker.kalam@iitp.ac.in',
       password: 'mock-staff-pass',
     });
 
@@ -41,7 +41,7 @@ describe('mockAuthService', () => {
   it('authenticates staff across roles without any client role selector', async () => {
     // Caretaker
     const caretakerRes = await authService.loginStaff({
-      email: 'caretaker.mandakini@hostel.edu',
+      email: 'caretaker.kalam@iitp.ac.in',
       password: 'mock-staff-pass',
     });
     expect(caretakerRes.success).toBe(true);
@@ -49,7 +49,7 @@ describe('mockAuthService', () => {
 
     // Technician
     const techRes = await authService.loginStaff({
-      email: 'tech.raj@hostel.edu',
+      email: 'tech.raj@iitp.ac.in',
       password: 'mock-staff-pass',
     });
     expect(techRes.success).toBe(true);
@@ -57,7 +57,7 @@ describe('mockAuthService', () => {
 
     // Warden
     const wardenRes = await authService.loginStaff({
-      email: 'warden.mandakini@hostel.edu',
+      email: 'warden.kalam@iitp.ac.in',
       password: 'mock-staff-pass',
     });
     expect(wardenRes.success).toBe(true);
@@ -65,7 +65,7 @@ describe('mockAuthService', () => {
 
     // Hostel Admin
     const adminRes = await authService.loginStaff({
-      email: 'admin@campus.edu',
+      email: 'admin@iitp.ac.in',
       password: 'mock-admin-pass',
     });
     expect(adminRes.success).toBe(true);
@@ -74,13 +74,13 @@ describe('mockAuthService', () => {
 
   it('handles session persistence and logout cleanly', async () => {
     await authService.loginStudent({
-      email: 'alex.sharma@college.edu',
+      email: 'alex.sharma@iitp.ac.in',
       password: 'mock-student-pass',
     });
 
     const activeUser = await authService.getCurrentUser();
     expect(activeUser).not.toBeNull();
-    expect(activeUser?.email).toBe('alex.sharma@college.edu');
+    expect(activeUser?.email).toBe('alex.sharma@iitp.ac.in');
 
     await authService.logout();
     const loggedOutUser = await authService.getCurrentUser();

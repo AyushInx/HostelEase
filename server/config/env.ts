@@ -13,8 +13,19 @@ const envSchema = z.object({
   
   // First Hostel Admin bootstrapping configuration (Rule: reading from env vars, no public path)
   INITIAL_ADMIN_NAME: z.string().default('Campus Chief Admin'),
-  INITIAL_ADMIN_EMAIL: z.string().email().default('admin@campus.edu'),
+  INITIAL_ADMIN_EMAIL: z.string().email().default('admin@iitp.ac.in'),
   INITIAL_ADMIN_PASSWORD: z.string().min(8).default('CampusAdmin2026!'),
+
+  // Configurable grace period (minutes) for Tier 2 escalation following Tier 1
+  TIER2_GRACE_PERIOD_MINUTES: z.string().default('120').transform((val) => parseInt(val, 10)),
+
+  // Production Resend Email Delivery Configuration
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default('HostelEase <onboarding@resend.dev>'),
+
+  // Keyed HMAC Secret for 6-digit OTP verification (keyed verifier invariant)
+  OTP_SECRET: z.string().min(16, 'OTP_SECRET must be at least 16 characters').default('hostel_complaint_otp_hmac_secret_2026'),
+  PREVIOUS_OTP_SECRET: z.string().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

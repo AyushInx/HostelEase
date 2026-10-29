@@ -21,7 +21,8 @@ export async function connectDB(customUri?: string): Promise<typeof mongoose> {
     }
     return conn;
   } catch (err: any) {
-    if (env.NODE_ENV === 'test') {
+    if (env.NODE_ENV === 'production' || env.NODE_ENV === 'test') {
+      console.error(`❌ Fatal: Failed to connect to primary MongoDB in ${env.NODE_ENV}: ${err.message}`);
       throw err;
     }
     console.warn(`⚠️ Could not connect to primary MongoDB at ${targetUri}: ${err.message}`);

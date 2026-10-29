@@ -16,68 +16,87 @@ import type { AuthCredentials, AuthResult, AuthUser, IAuthService } from '../typ
 
 export const MOCK_USERS: Record<string, AuthUser & { mockPasswordHash: string }> = {
   // Demo Student
-  'alex.sharma@college.edu': {
+  'alex.sharma@iitp.ac.in': {
     id: 'usr_mock_std_001',
     name: 'Alex Sharma',
-    email: 'alex.sharma@college.edu',
+    email: 'alex.sharma@iitp.ac.in',
     role: 'Student',
+    isEmailVerified: true,
     eligibilityStatus: 'approved',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'C.V.R Hostel',
     roomNumber: 'B-304',
     createdAt: '2026-01-15T10:00:00Z',
     mockPasswordHash: 'mock-student-pass',
   },
   // Demo Student with Pending Eligibility
-  'priya.patel@college.edu': {
+  'priya.patel@iitp.ac.in': {
     id: 'usr_mock_std_002',
     name: 'Priya Patel',
-    email: 'priya.patel@college.edu',
+    email: 'priya.patel@iitp.ac.in',
     role: 'Student',
+    isEmailVerified: true,
     eligibilityStatus: 'pending',
-    hostelName: 'Kaveri Hostel',
+    hostelName: 'Kalam Hostel',
     roomNumber: 'A-102',
     createdAt: '2026-02-01T10:00:00Z',
     mockPasswordHash: 'mock-student-pass',
   },
+  // Resident Student Ayush
+  'ayush_2401ec60@iitp.ac.in': {
+    id: 'usr_mock_std_ayush',
+    name: 'Ayush',
+    email: 'ayush_2401ec60@iitp.ac.in',
+    role: 'Student',
+    isEmailVerified: true,
+    eligibilityStatus: 'approved',
+    hostelName: 'Kalam Hostel',
+    roomNumber: 'A-201',
+    createdAt: '2026-02-10T10:00:00Z',
+    mockPasswordHash: 'mock-student-pass',
+  },
   // Demo Caretaker
-  'caretaker.mandakini@hostel.edu': {
+  'caretaker.kalam@iitp.ac.in': {
     id: 'usr_mock_ct_001',
     name: 'Suresh Kumar',
-    email: 'caretaker.mandakini@hostel.edu',
+    email: 'caretaker.kalam@iitp.ac.in',
     role: 'Caretaker',
+    isEmailVerified: true,
     eligibilityStatus: 'approved',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'Kalam Hostel',
     createdAt: '2025-11-01T10:00:00Z',
     mockPasswordHash: 'mock-staff-pass',
   },
   // Demo Technician
-  'tech.raj@hostel.edu': {
+  'tech.raj@iitp.ac.in': {
     id: 'usr_mock_tech_001',
     name: 'Rajesh Verma (Electrician)',
-    email: 'tech.raj@hostel.edu',
+    email: 'tech.raj@iitp.ac.in',
     role: 'Technician',
+    isEmailVerified: true,
     eligibilityStatus: 'approved',
     hostelName: 'Campus Maintenance Wing',
     createdAt: '2025-11-10T10:00:00Z',
     mockPasswordHash: 'mock-staff-pass',
   },
   // Demo Warden
-  'warden.mandakini@hostel.edu': {
+  'warden.kalam@iitp.ac.in': {
     id: 'usr_mock_wd_001',
     name: 'Dr. Anita Roy',
-    email: 'warden.mandakini@hostel.edu',
+    email: 'warden.kalam@iitp.ac.in',
     role: 'Warden',
+    isEmailVerified: true,
     eligibilityStatus: 'approved',
-    hostelName: 'Mandakini Hostel',
+    hostelName: 'C.V.R Hostel',
     createdAt: '2025-10-01T10:00:00Z',
     mockPasswordHash: 'mock-staff-pass',
   },
   // Demo Hostel Admin (System Admin)
-  'admin@campus.edu': {
+  'admin@iitp.ac.in': {
     id: 'usr_mock_adm_001',
     name: 'Campus Chief Admin',
-    email: 'admin@campus.edu',
+    email: 'admin@iitp.ac.in',
     role: 'Hostel Admin',
+    isEmailVerified: true,
     eligibilityStatus: 'approved',
     createdAt: '2025-08-01T10:00:00Z',
     mockPasswordHash: 'mock-admin-pass',
@@ -87,6 +106,8 @@ export const MOCK_USERS: Record<string, AuthUser & { mockPasswordHash: string }>
 const CURRENT_USER_SESSION_KEY = 'hct_mock_active_session';
 
 class MockAuthService implements IAuthService {
+  private pendingOtps = new Map<string, string>();
+
   private simulateDelay(ms: number = 400): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
@@ -100,7 +121,7 @@ class MockAuthService implements IAuthService {
     if (!userRecord) {
       return {
         success: false,
-        message: 'Invalid student credentials. For demo, use: alex.sharma@college.edu',
+        message: 'Invalid student credentials. For demo, use: alex.sharma@iitp.ac.in',
       };
     }
 
@@ -178,6 +199,91 @@ class MockAuthService implements IAuthService {
   async logout(): Promise<void> {
     await this.simulateDelay(100);
     sessionStorage.removeItem(CURRENT_USER_SESSION_KEY);
+  }
+
+  async sendStudentOtp(email: string): Promise<{ success: boolean; message?: string }> {
+    await this.simulateDelay(300);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail.endsWith('@iitp.ac.in')) {
+      return {
+        success: false,
+        message: 'Registration is restricted to @iitp.ac.in institutional college email.',
+      };
+    }
+
+    const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    this.pendingOtps.set(cleanEmail, randomOtp);
+
+    return {
+      success: true,
+      message: 'OTP has been dispatched to your institutional inbox.',
+    };
+  }
+
+  async registerStudent(data: {
+    name: string;
+    email: string;
+    password: string;
+    hostelName?: string;
+    roomNumber?: string;
+    otp: string;
+  }): Promise<AuthResult> {
+    await this.simulateDelay(400);
+    const cleanEmail = data.email.trim().toLowerCase();
+
+    if (!cleanEmail.endsWith('@iitp.ac.in')) {
+      return {
+        success: false,
+        message: 'Registration requires an @iitp.ac.in institutional email address.',
+      };
+    }
+
+    const expectedOtp = this.pendingOtps.get(cleanEmail);
+    if (!data.otp || !expectedOtp || data.otp.trim() !== expectedOtp) {
+      return {
+        success: false,
+        message: 'Invalid verification code. Please check your inbox and try again.',
+      };
+    }
+
+    this.pendingOtps.delete(cleanEmail);
+
+    if (!data.password || data.password.length < 6) {
+      return {
+        success: false,
+        message: 'Password must be at least 6 characters.',
+      };
+    }
+
+    const newUser: AuthUser & { mockPasswordHash: string } = {
+      id: `usr_std_${Date.now()}`,
+      name: data.name.trim() || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      role: 'Student',
+      isEmailVerified: true,
+      eligibilityStatus: 'approved',
+      hostelName: data.hostelName || 'Kalam Hostel',
+      roomNumber: data.roomNumber || '101',
+      createdAt: new Date().toISOString(),
+      mockPasswordHash: data.password,
+    };
+
+    MOCK_USERS[cleanEmail] = newUser;
+    try {
+      const stored = localStorage.getItem('hct_custom_registered_users');
+      const usersMap = stored ? JSON.parse(stored) : {};
+      usersMap[cleanEmail] = newUser;
+      localStorage.setItem('hct_custom_registered_users', JSON.stringify(usersMap));
+    } catch {}
+
+    const { mockPasswordHash: _, ...safeUser } = newUser;
+    sessionStorage.setItem(CURRENT_USER_SESSION_KEY, JSON.stringify(safeUser));
+
+    return {
+      success: true,
+      user: safeUser,
+      message: 'Student account registered and verified successfully!',
+    };
   }
 }
 

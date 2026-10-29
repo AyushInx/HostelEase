@@ -4,6 +4,50 @@ import { SESSION_COOKIE_NAME } from '../middleware/auth';
 import { env } from '../config/env';
 
 export class AuthController {
+  async sendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email, type } = req.body;
+      const ip = req.ip || req.socket.remoteAddress;
+      const userAgent = req.headers['user-agent'];
+
+      const result = await authService.sendOtp(email, type, ip, userAgent);
+
+      res.status(200).json({
+        success: true,
+        message: 'Verification code sent to your institutional email.',
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async verifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email, otp, token: magicToken, name } = req.body;
+      const ip = req.ip || req.socket.remoteAddress;
+      const userAgent = req.headers['user-agent'];
+
+      const { user, token } = await authService.verifyOtp(email, otp, magicToken, name, ip, userAgent);
+
+      // Set httpOnly secure session cookie
+      res.cookie(SESSION_COOKIE_NAME, token, {
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Email verified successfully.',
+        data: { user, token },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password } = req.body;
