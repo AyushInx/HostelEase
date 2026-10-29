@@ -3,6 +3,16 @@ import { authService } from '../services/auth.service';
 import { SESSION_COOKIE_NAME } from '../middleware/auth';
 import { env } from '../config/env';
 
+function getCookieOptions() {
+  const isCrossDomain = env.NODE_ENV === 'production' && !!env.CLIENT_ORIGIN && !env.CLIENT_ORIGIN.includes('localhost');
+  return {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: (isCrossDomain ? 'none' : 'lax') as 'none' | 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  };
+}
+
 export class AuthController {
   async sendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -31,12 +41,7 @@ export class AuthController {
       const { user, token } = await authService.verifyOtp(email, otp, magicToken, name, ip, userAgent);
 
       // Set httpOnly secure session cookie
-      res.cookie(SESSION_COOKIE_NAME, token, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+      res.cookie(SESSION_COOKIE_NAME, token, getCookieOptions());
 
       res.status(200).json({
         success: true,
@@ -57,12 +62,7 @@ export class AuthController {
       const { user, token } = await authService.login(email, password, ip, userAgent);
 
       // Set httpOnly secure session cookie
-      res.cookie(SESSION_COOKIE_NAME, token, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+      res.cookie(SESSION_COOKIE_NAME, token, getCookieOptions());
 
       res.status(200).json({
         success: true,
@@ -95,10 +95,11 @@ export class AuthController {
 
   async logout(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const opts = getCookieOptions();
       res.clearCookie(SESSION_COOKIE_NAME, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        httpOnly: opts.httpOnly,
+        secure: opts.secure,
+        sameSite: opts.sameSite,
       });
       res.status(200).json({
         success: true,

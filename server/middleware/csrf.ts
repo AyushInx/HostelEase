@@ -17,10 +17,11 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
 
   if (!cookieToken) {
     cookieToken = crypto.randomBytes(32).toString('hex');
+    const isCrossDomain = env.NODE_ENV === 'production' && !!env.CLIENT_ORIGIN && !env.CLIENT_ORIGIN.includes('localhost');
     res.cookie(CSRF_COOKIE_NAME, cookieToken, {
       httpOnly: false, // Must be readable by client JavaScript for double-submit
       secure: env.NODE_ENV === 'production', // true only in production per SPEC
-      sameSite: 'lax',
+      sameSite: (isCrossDomain ? 'none' : 'lax') as 'none' | 'lax',
       path: '/',
     });
   }
