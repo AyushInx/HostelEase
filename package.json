@@ -8,7 +8,7 @@
     "server": "tsx server/server.ts",
     "seed": "tsx server/scripts/seed.ts",
     "seed:demo": "tsx server/scripts/seed.demo.ts",
-    "build": "tsc -b && vite build && esbuild \"api/[...all].ts\" --bundle --platform=node --format=esm --packages=external --outfile=\"api/[...all].js\" && esbuild \"api/index.ts\" --bundle --platform=node --format=esm --packages=external --outfile=\"api/index.js\"",
+    "build": "tsc -b && vite build && esbuild \"api-src/[...all].ts\" --bundle --platform=node --format=esm --packages=external --outfile=\"api/[...all].js\" && esbuild \"api-src/index.ts\" --bundle --platform=node --format=esm --packages=external --outfile=\"api/index.js\"",
     "lint": "oxlint",
     "test": "vitest run",
     "test:backend": "vitest run server/test",
