@@ -398,10 +398,10 @@ export const StaffManagementView: React.FC = () => {
                     onChange={(e) => setNewHostel(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-lg border border-slate-300 bg-white"
                   >
-                    <option value="C.V.R Hostel">C.V.R Hostel</option>
                     <option value="Kalam Hostel">Kalam Hostel</option>
+                    <option value="Asima Hostel">Asima Hostel (Girls' Hostel)</option>
                     <option value="Aryabhatta Hostel">Aryabhatta Hostel</option>
-                    <option value="Asima Hostel">Asima Hostel</option>
+                    <option value="C.V.R Hostel">C.V.R Hostel</option>
                   </select>
                 </div>
               )}

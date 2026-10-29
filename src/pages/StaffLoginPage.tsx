@@ -165,7 +165,7 @@ export const StaffLoginPage: React.FC = () => {
             <span className="text-xs font-semibold text-slate-700">Quick Test Staff Profiles:</span>
             <span className="text-[10px] text-slate-400">Click to fill</span>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
             <button
               type="button"
               onClick={() => setDemoCredentials('caretaker.kalam@iitp.ac.in', 'mock-staff-pass')}
@@ -173,6 +173,15 @@ export const StaffLoginPage: React.FC = () => {
             >
               <div className="font-semibold text-slate-800">Caretaker</div>
               <div className="text-[10px] text-slate-400 truncate">caretaker.kalam...</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDemoCredentials('caretaker.asima@iitp.ac.in', 'mock-staff-pass')}
+              className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+            >
+              <div className="font-semibold text-slate-800">Staff (Asima ♀)</div>
+              <div className="text-[10px] text-slate-400 truncate">asima.staff...</div>
             </button>
 
             <button
@@ -191,6 +200,15 @@ export const StaffLoginPage: React.FC = () => {
             >
               <div className="font-semibold text-slate-800">Warden</div>
               <div className="text-[10px] text-slate-400 truncate">warden.kalam...</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDemoCredentials('warden.asima@iitp.ac.in', 'mock-staff-pass')}
+              className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+            >
+              <div className="font-semibold text-slate-800">Warden (Asima ♀)</div>
+              <div className="text-[10px] text-slate-400 truncate">warden.asima...</div>
             </button>
 
             <button

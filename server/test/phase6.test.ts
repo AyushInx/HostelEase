@@ -588,7 +588,7 @@ describe('Phase 6: Status Transitions, Assignments, Unresolved Reports & Escalat
         referenceId: 'HCT-2026-88001',
         student: new Types.ObjectId(studentAlexId),
         studentName: 'Alex Sharma',
-        hostelName: 'C.V.R Hostel',
+        hostelName: 'Kalam Hostel',
         roomNumber: 'A-108',
         category: 'Electrical',
         title: 'Exhaust Fan Burning Smell',

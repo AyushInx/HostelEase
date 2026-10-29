@@ -36,24 +36,25 @@ export async function runSeed(): Promise<void> {
   console.log('🏢 Seeding Hostels and Blocks...');
   const hostelsData = [
     {
-      name: 'C.V.R Hostel',
-      code: 'CVR',
-      caretakerName: 'Suresh Kumar',
-      wardenName: 'Dr. Anita Roy',
-      blocks: [
-        { name: 'A Block', floors: 8, roomsCount: 224 },
-      ],
-    },
-    {
       name: 'Kalam Hostel',
       code: 'KLM',
-      caretakerName: 'Ramesh Chandra',
-      wardenName: 'Dr. K. Sharma',
+      caretakerName: 'Suresh Kumar',
+      wardenName: 'Dr. Anita Roy',
       blocks: [
         { name: 'A Block', floors: 8, roomsCount: 296 },
         { name: 'B Block', floors: 8, roomsCount: 208 },
         { name: 'C Block', floors: 8, roomsCount: 208 },
         { name: 'D Block', floors: 8, roomsCount: 296 },
+      ],
+    },
+    {
+      name: 'Asima Hostel',
+      code: 'ASM',
+      caretakerName: 'Sunita Devi',
+      wardenName: 'Prof. V. Raman',
+      blocks: [
+        { name: 'East Wing', floors: 5, roomsCount: 150 },
+        { name: 'West Wing', floors: 5, roomsCount: 150 },
       ],
     },
     {
@@ -69,13 +70,12 @@ export async function runSeed(): Promise<void> {
       ],
     },
     {
-      name: 'Asima Hostel',
-      code: 'ASM',
+      name: 'C.V.R Hostel',
+      code: 'CVR',
       caretakerName: 'Mahesh Babu',
-      wardenName: 'Prof. V. Raman',
+      wardenName: 'Dr. K. Sharma',
       blocks: [
-        { name: 'East Wing', floors: 5, roomsCount: 150 },
-        { name: 'West Wing', floors: 5, roomsCount: 150 },
+        { name: 'A Block', floors: 8, roomsCount: 224 },
       ],
     },
   ];
@@ -112,7 +112,7 @@ export async function runSeed(): Promise<void> {
     specialization?: string;
     isDemo?: boolean;
   }> = [
-    // Caretaker
+    // Kalam Hostel Staff (Boys)
     {
       name: 'Suresh Kumar',
       email: 'caretaker.kalam@iitp.ac.in',
@@ -120,7 +120,38 @@ export async function runSeed(): Promise<void> {
       role: 'Caretaker',
       isEmailVerified: true,
       eligibilityStatus: 'approved',
-      hostelName: 'C.V.R Hostel',
+      hostelName: 'Kalam Hostel',
+      isDemo: true,
+    },
+    {
+      name: 'Dr. Anita Roy',
+      email: 'warden.kalam@iitp.ac.in',
+      passwordHash: defaultPass,
+      role: 'Warden',
+      isEmailVerified: true,
+      eligibilityStatus: 'approved',
+      hostelName: 'Kalam Hostel',
+      isDemo: true,
+    },
+    // Asima Hostel Staff (Girls)
+    {
+      name: 'Sunita Devi',
+      email: 'caretaker.asima@iitp.ac.in',
+      passwordHash: defaultPass,
+      role: 'Caretaker',
+      isEmailVerified: true,
+      eligibilityStatus: 'approved',
+      hostelName: 'Asima Hostel',
+      isDemo: true,
+    },
+    {
+      name: 'Prof. V. Raman',
+      email: 'warden.asima@iitp.ac.in',
+      passwordHash: defaultPass,
+      role: 'Warden',
+      isEmailVerified: true,
+      eligibilityStatus: 'approved',
+      hostelName: 'Asima Hostel',
       isDemo: true,
     },
     // Technicians
@@ -144,17 +175,6 @@ export async function runSeed(): Promise<void> {
       specialization: 'Plumbing & Drainage',
       isDemo: true,
     },
-    // Warden
-    {
-      name: 'Dr. Anita Roy',
-      email: 'warden.kalam@iitp.ac.in',
-      passwordHash: defaultPass,
-      role: 'Warden',
-      isEmailVerified: true,
-      eligibilityStatus: 'approved',
-      hostelName: 'C.V.R Hostel',
-      isDemo: true,
-    },
     // Students
     {
       name: 'Alex Sharma',
@@ -163,7 +183,7 @@ export async function runSeed(): Promise<void> {
       role: 'Student',
       isEmailVerified: true,
       eligibilityStatus: 'approved',
-      hostelName: 'C.V.R Hostel',
+      hostelName: 'Kalam Hostel',
       roomNumber: 'B-304',
       isDemo: true,
     },
@@ -174,8 +194,8 @@ export async function runSeed(): Promise<void> {
       role: 'Student',
       isEmailVerified: true,
       eligibilityStatus: 'pending',
-      hostelName: 'Kalam Hostel',
-      roomNumber: 'A-102',
+      hostelName: 'Asima Hostel',
+      roomNumber: 'G-102',
       isDemo: true,
     },
     {
@@ -199,16 +219,17 @@ export async function runSeed(): Promise<void> {
       u = await User.create(uData);
       console.log(`   ✅ User created: ${u.name} (${u.role})`);
     } else {
-      let changed = false;
-      if (!u.isEmailVerified) {
-        u.isEmailVerified = true;
-        changed = true;
-      }
-      if (!u.isDemo) {
-        u.isDemo = true;
-        changed = true;
-      }
-      if (changed) await u.save();
+      u.name = uData.name;
+      u.role = uData.role;
+      u.passwordHash = uData.passwordHash;
+      u.hostelName = uData.hostelName;
+      u.roomNumber = uData.roomNumber;
+      u.isEmailVerified = true;
+      u.eligibilityStatus = uData.eligibilityStatus;
+      u.isDemo = true;
+      if (uData.specialization) u.specialization = uData.specialization;
+      await u.save();
+      console.log(`   ✅ User updated: ${u.name} (${u.role}, ${u.hostelName || 'General'})`);
     }
     seededUsers[uData.email] = u;
   }
@@ -216,9 +237,11 @@ export async function runSeed(): Promise<void> {
   // 4. Seed Initial Sample Complaints
   console.log('📋 Seeding Initial Complaints & Timeline Milestones...');
   const alex = seededUsers['alex.sharma@iitp.ac.in'];
+  const priya = seededUsers['priya.patel@iitp.ac.in'];
   const rajesh = seededUsers['tech.raj@iitp.ac.in'];
   const suresh = seededUsers['caretaker.kalam@iitp.ac.in'];
   const anita = seededUsers['warden.kalam@iitp.ac.in'];
+  const sunita = seededUsers['caretaker.asima@iitp.ac.in'];
 
   if (alex) {
     const complaintsToSeed: Array<{
@@ -240,11 +263,12 @@ export async function runSeed(): Promise<void> {
       unresolvedReportsCount: number;
       isDemo: boolean;
     }> = [
+      // Kalam Hostel (Alex Sharma)
       {
         referenceId: 'HCT-2026-84912',
         student: alex._id,
         studentName: alex.name,
-        hostelName: 'C.V.R Hostel',
+        hostelName: 'Kalam Hostel',
         block: 'B Block',
         roomNumber: 'B-304',
         category: 'Electrical',
@@ -262,7 +286,7 @@ export async function runSeed(): Promise<void> {
         referenceId: 'HCT-2026-92104',
         student: alex._id,
         studentName: alex.name,
-        hostelName: 'C.V.R Hostel',
+        hostelName: 'Kalam Hostel',
         block: 'B Block',
         roomNumber: 'B-304',
         category: 'Plumbing',
@@ -280,7 +304,7 @@ export async function runSeed(): Promise<void> {
         referenceId: 'HCT-2026-51204',
         student: alex._id,
         studentName: alex.name,
-        hostelName: 'C.V.R Hostel',
+        hostelName: 'Kalam Hostel',
         block: 'B Block',
         roomNumber: 'B-304',
         category: 'Network / Wi-Fi',
@@ -297,7 +321,7 @@ export async function runSeed(): Promise<void> {
         referenceId: 'HCT-2026-34891',
         student: alex._id,
         studentName: alex.name,
-        hostelName: 'C.V.R Hostel',
+        hostelName: 'Kalam Hostel',
         block: 'B Block',
         roomNumber: 'B-304',
         category: 'Carpentry',
@@ -316,7 +340,7 @@ export async function runSeed(): Promise<void> {
         referenceId: 'HCT-2026-67319',
         student: alex._id,
         studentName: alex.name,
-        hostelName: 'C.V.R Hostel',
+        hostelName: 'Kalam Hostel',
         block: 'B Block',
         roomNumber: 'B-304',
         category: 'Cleanliness',
@@ -329,6 +353,45 @@ export async function runSeed(): Promise<void> {
         isDemo: true,
       },
     ];
+
+    if (priya) {
+      complaintsToSeed.push(
+        {
+          referenceId: 'HCT-2026-78210',
+          student: priya._id,
+          studentName: priya.name,
+          hostelName: 'Asima Hostel',
+          block: 'East Wing',
+          roomNumber: 'G-102',
+          category: 'Electrical',
+          title: 'Water Geyser Thermostat Failure',
+          description: 'The geyser in the 1st floor washroom is overheating and tripping the MCB automatically.',
+          priority: 'High',
+          status: 'In Progress',
+          assignedTechnician: rajesh._id,
+          assignedTechnicianName: rajesh.name,
+          supportCount: 3,
+          unresolvedReportsCount: 0,
+          isDemo: true,
+        },
+        {
+          referenceId: 'HCT-2026-44129',
+          student: priya._id,
+          studentName: priya.name,
+          hostelName: 'Asima Hostel',
+          block: 'East Wing',
+          roomNumber: 'G-102',
+          category: 'Carpentry',
+          title: 'Room Window Latch Jammed',
+          description: 'The exterior window latch has seized and cannot be latched shut.',
+          priority: 'Medium',
+          status: 'Submitted',
+          supportCount: 1,
+          unresolvedReportsCount: 0,
+          isDemo: true,
+        }
+      );
+    }
 
     for (const cData of complaintsToSeed) {
       const existing = await Complaint.findOne({ referenceId: cData.referenceId });
@@ -400,7 +463,23 @@ export async function runSeed(): Promise<void> {
           });
         }
       } else {
-        console.log(`   ℹ️ Complaint already exists: ${existing.referenceId} (${existing.status})`);
+        existing.student = cData.student;
+        existing.studentName = cData.studentName;
+        existing.hostelName = cData.hostelName;
+        existing.block = cData.block;
+        existing.roomNumber = cData.roomNumber;
+        existing.category = cData.category;
+        existing.title = cData.title;
+        existing.description = cData.description;
+        existing.priority = cData.priority;
+        existing.status = cData.status;
+        existing.isDemo = true;
+        if (cData.assignedTechnician) {
+          existing.assignedTechnician = cData.assignedTechnician;
+          existing.assignedTechnicianName = cData.assignedTechnicianName;
+        }
+        await existing.save();
+        console.log(`   ✅ Complaint updated: ${existing.referenceId} (${existing.hostelName}, ${existing.status})`);
       }
     }
   }

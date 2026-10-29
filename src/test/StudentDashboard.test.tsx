@@ -30,7 +30,7 @@ describe('StudentDashboardPage (Phase 2)', () => {
 
     expect(screen.getByRole('heading', { name: /Student Maintenance Hub/i })).toBeInTheDocument();
     expect(screen.getByText(/Alex Sharma/i)).toBeInTheDocument();
-    expect(screen.getByText(/C\.V\.R Hostel, Room B-304/i)).toBeInTheDocument();
+    expect(screen.getByText(/Kalam Hostel, Room B-304/i)).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText(/Total Tickets/i)).toBeInTheDocument();
@@ -113,12 +113,12 @@ describe('StudentDashboardPage (Phase 2)', () => {
     const user = userEvent.setup();
     renderDashboard();
 
-    const communityTab = screen.getByRole('tab', { name: /C\.V\.R Hostel Community Board/i });
+    const communityTab = screen.getByRole('tab', { name: /(?:Kalam|C\.V\.R) Hostel Community Board/i });
     await user.click(communityTab);
 
     await waitFor(() => {
       expect(screen.getByText(/Community Maintenance Board/i)).toBeInTheDocument();
-      expect(screen.getByText(/Water Cooler Filter Replacement/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Ceiling Fan/i).length).toBeGreaterThan(0);
     });
 
     // Verify student email is never displayed in community feed

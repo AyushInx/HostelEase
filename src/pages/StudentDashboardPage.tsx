@@ -52,7 +52,7 @@ export const StudentDashboardPage: React.FC = () => {
 
   const studentId = user?.id || 'usr_mock_std_001';
   const studentName = user?.name || 'Alex Sharma';
-  const hostelName = user?.hostelName || 'C.V.R Hostel';
+  const hostelName = user?.hostelName || 'Kalam Hostel';
   const roomNumber = user?.roomNumber || 'B-304';
 
   const loadData = useCallback(async () => {

@@ -102,6 +102,13 @@ export const StudentLoginPage: React.FC = () => {
     setApiError(null);
   };
 
+  const handleFillDemoPriya = () => {
+    setEmail('priya.patel@iitp.ac.in');
+    setPassword('mock-student-pass');
+    setErrors({});
+    setApiError(null);
+  };
+
   const handleSendOtp = async () => {
     setApiError(null);
     setSuccessMessage(null);
@@ -290,17 +297,30 @@ export const StudentLoginPage: React.FC = () => {
             </form>
 
             {/* Demo Auto-fill Helper */}
-            <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleFillDemo}
-                leftIcon={<UserCheck className="w-3.5 h-3.5 text-indigo-600" />}
-                className="text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
-              >
-                Auto-fill Demo Student Credentials
-              </Button>
+            <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center gap-1.5">
+              <span className="text-[11px] text-slate-500 font-medium">Quick Demo Student Credentials:</span>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFillDemo}
+                  leftIcon={<UserCheck className="w-3.5 h-3.5 text-indigo-600" />}
+                  className="text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                >
+                  Auto-fill Demo Student Credentials (Alex)
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFillDemoPriya}
+                  leftIcon={<UserCheck className="w-3.5 h-3.5 text-pink-600" />}
+                  className="text-xs text-pink-600 hover:text-pink-700 hover:bg-pink-50"
+                >
+                  Priya (Asima Hostel ♀)
+                </Button>
+              </div>
             </div>
 
             {/* Switch to Registration */}
@@ -382,9 +402,9 @@ export const StudentLoginPage: React.FC = () => {
                     className="w-full text-sm p-2.5 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   >
                     <option value="Kalam Hostel">Kalam Hostel</option>
-                    <option value="C.V.R Hostel">C.V.R Hostel</option>
+                    <option value="Asima Hostel">Asima Hostel (Girls' Hostel)</option>
                     <option value="Aryabhatta Hostel">Aryabhatta Hostel</option>
-                    <option value="Asima Hostel">Asima Hostel</option>
+                    <option value="C.V.R Hostel">C.V.R Hostel</option>
                   </select>
                 </div>
 

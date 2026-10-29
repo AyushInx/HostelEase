@@ -23,21 +23,21 @@ export const MOCK_USERS: Record<string, AuthUser & { mockPasswordHash: string }>
     role: 'Student',
     isEmailVerified: true,
     eligibilityStatus: 'approved',
-    hostelName: 'C.V.R Hostel',
+    hostelName: 'Kalam Hostel',
     roomNumber: 'B-304',
     createdAt: '2026-01-15T10:00:00Z',
     mockPasswordHash: 'mock-student-pass',
   },
-  // Demo Student with Pending Eligibility
+  // Demo Student with Approved Eligibility (Girls' Hostel)
   'priya.patel@iitp.ac.in': {
     id: 'usr_mock_std_002',
     name: 'Priya Patel',
     email: 'priya.patel@iitp.ac.in',
     role: 'Student',
     isEmailVerified: true,
-    eligibilityStatus: 'pending',
-    hostelName: 'Kalam Hostel',
-    roomNumber: 'A-102',
+    eligibilityStatus: 'approved',
+    hostelName: 'Asima Hostel',
+    roomNumber: 'G-102',
     createdAt: '2026-02-01T10:00:00Z',
     mockPasswordHash: 'mock-student-pass',
   },
@@ -54,7 +54,7 @@ export const MOCK_USERS: Record<string, AuthUser & { mockPasswordHash: string }>
     createdAt: '2026-02-10T10:00:00Z',
     mockPasswordHash: 'mock-student-pass',
   },
-  // Demo Caretaker
+  // Demo Caretaker (Kalam Hostel)
   'caretaker.kalam@iitp.ac.in': {
     id: 'usr_mock_ct_001',
     name: 'Suresh Kumar',
@@ -63,6 +63,18 @@ export const MOCK_USERS: Record<string, AuthUser & { mockPasswordHash: string }>
     isEmailVerified: true,
     eligibilityStatus: 'approved',
     hostelName: 'Kalam Hostel',
+    createdAt: '2025-11-01T10:00:00Z',
+    mockPasswordHash: 'mock-staff-pass',
+  },
+  // Demo Caretaker (Asima Hostel - Girls' Hostel)
+  'caretaker.asima@iitp.ac.in': {
+    id: 'usr_mock_ct_002',
+    name: 'Sunita Devi',
+    email: 'caretaker.asima@iitp.ac.in',
+    role: 'Caretaker',
+    isEmailVerified: true,
+    eligibilityStatus: 'approved',
+    hostelName: 'Asima Hostel',
     createdAt: '2025-11-01T10:00:00Z',
     mockPasswordHash: 'mock-staff-pass',
   },
@@ -78,7 +90,7 @@ export const MOCK_USERS: Record<string, AuthUser & { mockPasswordHash: string }>
     createdAt: '2025-11-10T10:00:00Z',
     mockPasswordHash: 'mock-staff-pass',
   },
-  // Demo Warden
+  // Demo Warden (Kalam Hostel)
   'warden.kalam@iitp.ac.in': {
     id: 'usr_mock_wd_001',
     name: 'Dr. Anita Roy',
@@ -86,7 +98,19 @@ export const MOCK_USERS: Record<string, AuthUser & { mockPasswordHash: string }>
     role: 'Warden',
     isEmailVerified: true,
     eligibilityStatus: 'approved',
-    hostelName: 'C.V.R Hostel',
+    hostelName: 'Kalam Hostel',
+    createdAt: '2025-10-01T10:00:00Z',
+    mockPasswordHash: 'mock-staff-pass',
+  },
+  // Demo Warden (Asima Hostel - Girls' Hostel)
+  'warden.asima@iitp.ac.in': {
+    id: 'usr_mock_wd_002',
+    name: 'Prof. V. Raman',
+    email: 'warden.asima@iitp.ac.in',
+    role: 'Warden',
+    isEmailVerified: true,
+    eligibilityStatus: 'approved',
+    hostelName: 'Asima Hostel',
     createdAt: '2025-10-01T10:00:00Z',
     mockPasswordHash: 'mock-staff-pass',
   },
