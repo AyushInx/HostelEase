@@ -39,9 +39,9 @@ export interface AuditLogEntry {
   timestamp: string;
 }
 
-const STORAGE_HOSTELS_KEY = 'hct_mock_hostels_v2';
-const STORAGE_STAFF_KEY = 'hct_mock_staff_v1';
-const STORAGE_AUDIT_KEY = 'hct_mock_audit_v1';
+const STORAGE_HOSTELS_KEY = 'hct_mock_hostels_v3';
+const STORAGE_STAFF_KEY = 'hct_mock_staff_v2';
+const STORAGE_AUDIT_KEY = 'hct_mock_audit_v2';
 
 const INITIAL_HOSTELS: HostelRecord[] = [
   {
@@ -236,10 +236,14 @@ class MockStaffAdminService {
 
   private load() {
     try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        sessionStorage.removeItem('hct_mock_hostels_v1');
+        sessionStorage.removeItem('hct_mock_hostels_v2');
+      }
       const h = sessionStorage.getItem(STORAGE_HOSTELS_KEY);
       const parsed = h ? JSON.parse(h) : null;
-      // Auto-refresh cache if Aryabhatta is missing or CVR blocks need sync
-      const needsRefresh = !parsed || !parsed.some((x: any) => x.name === 'Aryabhatta Hostel') || parsed.find((x: any) => x.code === 'CVR')?.blocks?.length !== 1;
+      // Auto-refresh cache if Aryabhatta is missing or CVR blocks need sync or old Mandakini present
+      const needsRefresh = !parsed || !parsed.some((x: any) => x.name === 'Aryabhatta Hostel') || parsed.some((x: any) => /mandakini/i.test(x.name));
       
       this.hostels = needsRefresh ? JSON.parse(JSON.stringify(INITIAL_HOSTELS)) : parsed;
       if (needsRefresh) {

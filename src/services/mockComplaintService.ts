@@ -24,7 +24,7 @@ import { staffAdminService } from './mockStaffAdminService';
  * =========================================================================
  */
 
-const STORAGE_KEY = 'hct_mock_complaints_v2';
+const STORAGE_KEY = 'hct_mock_complaints_v3';
 
 // Seed complaints for initial demo & testing
 const INITIAL_MOCK_COMPLAINTS: Complaint[] = [
@@ -327,9 +327,19 @@ class MockComplaintService implements IComplaintService {
 
   private loadFromStorage() {
     try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        sessionStorage.removeItem('hct_mock_complaints_v1');
+        sessionStorage.removeItem('hct_mock_complaints_v2');
+      }
       const stored = sessionStorage.getItem(STORAGE_KEY);
       if (stored) {
-        this.complaints = JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        this.complaints = parsed.map((c: Complaint) => {
+          if (c.hostelName && /mandakini/i.test(c.hostelName)) {
+            c.hostelName = 'Kalam Hostel';
+          }
+          return c;
+        });
       } else {
         this.complaints = JSON.parse(JSON.stringify(INITIAL_MOCK_COMPLAINTS));
         this.saveToStorage();

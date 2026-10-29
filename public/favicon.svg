@@ -1,17 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
     <linearGradient id="hostelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="0%" stop-color="#4f46e5"/>
       <stop offset="100%" stop-color="#4338ca"/>
     </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.15"/>
-    </filter>
   </defs>
-  <!-- Background with subtle shadow -->
-  <rect width="64" height="64" rx="16" fill="url(#hostelGrad)"/>
-  <!-- Hostel Building Brand Icon -->
-  <g transform="translate(12, 12) scale(1.666)" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow)">
+  <!-- Background with crisp rounded corners -->
+  <rect width="64" height="64" rx="14" fill="url(#hostelGrad)"/>
+  <!-- Central Hostel Building Brand Icon -->
+  <g transform="translate(14, 14) scale(1.5)" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
     <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
     <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>

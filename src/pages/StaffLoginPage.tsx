@@ -69,24 +69,24 @@ export const StaffLoginPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto py-8">
+    <div className="max-w-md w-full mx-auto py-4">
       {/* Back to landing */}
       <Link
         to="/"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/80 backdrop-blur-md border border-white/80 rounded-full px-3.5 py-1.5 shadow-2xs transition-all mb-4"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-3.5 h-3.5" />
         Back to Overview
       </Link>
 
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-8 shadow-sm">
+      <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-white/80 p-8 shadow-2xl shadow-purple-900/10">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center mx-auto mb-3 shadow-sm">
-            <ShieldCheck className="w-6 h-6" />
+          <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-slate-900/20">
+            <ShieldCheck className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Staff & Operations Portal</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Staff & Operations Portal</h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
             Access maintenance assignments, acknowledgments, resolutions, and audit logs.
           </p>
         </div>
@@ -232,7 +232,8 @@ export const StaffLoginPage: React.FC = () => {
       </div>
 
       {/* Security footnote */}
-      <div className="mt-4 text-center text-[11px] text-slate-400">
+      <div className="mt-4 text-center text-[11px] text-slate-500 font-medium flex items-center justify-center gap-1.5 bg-white/70 backdrop-blur-xs py-1.5 px-3 rounded-full border border-white/80 max-w-sm mx-auto shadow-2xs">
+        <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
         <span>Protected by role-based server middleware and immutable audit logging.</span>
       </div>
     </div>
