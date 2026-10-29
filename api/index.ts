@@ -8,6 +8,11 @@ const app = createApp();
 // Handler for Vercel Serverless Functions
 export default async function handler(req: any, res: any) {
   try {
+    // Preserve full URL path if rewritten by Vercel
+    if (req.headers && req.headers['x-forwarded-uri']) {
+      req.url = req.headers['x-forwarded-uri'];
+    }
+
     await connectDB();
 
     // Auto-seed if database is empty on first cold start
