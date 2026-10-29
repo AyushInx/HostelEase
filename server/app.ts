@@ -11,6 +11,24 @@ import apiRoutes from './routes';
 export function createApp(): Express {
   const app = express();
 
+  // Instant diagnostic health check that does not require database connection
+  app.get('/health', (_req, res) => {
+    res.status(200).json({
+      status: 'ok',
+      hasMongoUri: !!process.env.MONGODB_URI,
+      nodeEnv: process.env.NODE_ENV,
+      timestamp: new Date().toISOString(),
+    });
+  });
+  app.get('/api/health', (_req, res) => {
+    res.status(200).json({
+      status: 'ok',
+      hasMongoUri: !!process.env.MONGODB_URI,
+      nodeEnv: process.env.NODE_ENV,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // Ensure DB connection for serverless / on-demand environments
   app.use(async (_req, res, next) => {
     try {
