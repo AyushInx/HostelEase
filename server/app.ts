@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
+import { connectDB } from './config/db';
 import { authenticateSession } from './middleware/auth';
 import { csrfProtection } from './middleware/csrf';
 import { errorHandler } from './middleware/error';
@@ -9,6 +10,21 @@ import apiRoutes from './routes';
 
 export function createApp(): Express {
   const app = express();
+
+  // Ensure DB connection for serverless / on-demand environments
+  app.use(async (_req, res, next) => {
+    try {
+      await connectDB();
+      next();
+    } catch (err: any) {
+      console.error('Database connection failed:', err);
+      res.status(500).json({
+        success: false,
+        error: 'Database connection failed. Please ensure MONGODB_URI is configured in environment variables.',
+        message: err.message,
+      });
+    }
+  });
 
   // CORS configuration for httpOnly cookies & CSRF tokens
   app.use(
@@ -44,8 +60,9 @@ export function createApp(): Express {
   // Global session authentication middleware
   app.use(authenticateSession);
 
-  // Mount API endpoints
+  // Mount API endpoints (both /api and / to handle Vercel rewrites seamlessly)
   app.use('/api', apiRoutes);
+  app.use('/', apiRoutes);
 
   // 404 Handler
   app.use((req: Request, res: Response) => {
