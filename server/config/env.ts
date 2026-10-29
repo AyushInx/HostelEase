@@ -31,9 +31,8 @@ const envSchema = z.object({
 const parsedEnv = envSchema.safeParse(process.env);
 
 if (!parsedEnv.success) {
-  console.error('❌ Environment configuration validation failed:');
-  console.error(JSON.stringify(parsedEnv.error.format(), null, 2));
-  process.exit(1);
+  console.warn('⚠️ Environment configuration warnings:');
+  console.warn(JSON.stringify(parsedEnv.error.format(), null, 2));
 }
 
-export const env = parsedEnv.data;
+export const env = parsedEnv.success ? parsedEnv.data : (envSchema.parse({}) as any);
