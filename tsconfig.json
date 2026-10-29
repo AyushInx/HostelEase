@@ -1,4 +1,14 @@
 {
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    "skipLibCheck": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "noEmit": true
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

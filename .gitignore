@@ -30,6 +30,7 @@ dist/
 dist-ssr/
 build/
 coverage/
+*.tsbuildinfo
 
 # OS and IDE files
 .DS_Store
