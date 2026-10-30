@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Mail, Lock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Mail, Lock, AlertCircle, KeyRound, EyeOff } from 'lucide-react';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Alert } from '../components/common/Alert';
+import { DemoAccessModal } from '../components/common/DemoAccessModal';
 import { useAuth } from '../context/AuthContext';
 
 export const StaffLoginPage: React.FC = () => {
@@ -15,6 +16,8 @@ export const StaffLoginPage: React.FC = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDemoUnlocked, setIsDemoUnlocked] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   const validate = (): boolean => {
     const nextErrors: { email?: string; password?: string } = {};
@@ -159,68 +162,99 @@ export const StaffLoginPage: React.FC = () => {
           </Button>
         </form>
 
-        {/* Quick Demo Staff Switcher */}
-        <div className="mt-6 pt-5 border-t border-slate-100">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-700">Quick Test Staff Profiles:</span>
-            <span className="text-[10px] text-slate-400">Click to fill</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+        {/* Password-Protected Demo Staff Switcher */}
+        {!isDemoUnlocked ? (
+          <div className="mt-6 pt-4 border-t border-slate-100 flex justify-center">
             <button
               type="button"
-              onClick={() => setDemoCredentials('caretaker.kalam@iitp.ac.in', 'mock-staff-pass')}
-              className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+              onClick={() => setIsDemoModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:bg-slate-100/80 transition-all cursor-pointer"
             >
-              <div className="font-semibold text-slate-800">Caretaker</div>
-              <div className="text-[10px] text-slate-400 truncate">caretaker.kalam...</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDemoCredentials('caretaker.asima@iitp.ac.in', 'mock-staff-pass')}
-              className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
-            >
-              <div className="font-semibold text-slate-800">Staff (Asima ♀)</div>
-              <div className="text-[10px] text-slate-400 truncate">asima.staff...</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDemoCredentials('tech.raj@iitp.ac.in', 'mock-staff-pass')}
-              className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
-            >
-              <div className="font-semibold text-slate-800">Technician</div>
-              <div className="text-[10px] text-slate-400 truncate">tech.raj@iitp.ac.in</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDemoCredentials('warden.kalam@iitp.ac.in', 'mock-staff-pass')}
-              className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
-            >
-              <div className="font-semibold text-slate-800">Warden</div>
-              <div className="text-[10px] text-slate-400 truncate">warden.kalam...</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDemoCredentials('warden.asima@iitp.ac.in', 'mock-staff-pass')}
-              className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
-            >
-              <div className="font-semibold text-slate-800">Warden (Asima ♀)</div>
-              <div className="text-[10px] text-slate-400 truncate">warden.asima...</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDemoCredentials('admin@iitp.ac.in', 'mock-admin-pass')}
-              className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
-            >
-              <div className="font-semibold text-slate-800">Hostel Admin</div>
-              <div className="text-[10px] text-slate-400 truncate">admin@iitp.ac.in</div>
+              <KeyRound className="w-3.5 h-3.5 text-slate-400" />
+              <span>Demo</span>
             </button>
           </div>
-        </div>
+        ) : (
+          <div className="mt-6 pt-5 border-t border-slate-100 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-slate-700">Quick Test Staff Profiles:</span>
+                <span className="text-[10px] text-slate-400">Click to fill</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDemoUnlocked(false)}
+                className="text-[11px] font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors px-2 py-0.5 rounded hover:bg-slate-100"
+                aria-label="Hide Demo Profiles"
+              >
+                <EyeOff className="w-3.5 h-3.5 text-slate-400" />
+                <span>Hide Demo</span>
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setDemoCredentials('caretaker.kalam@iitp.ac.in', 'mock-staff-pass')}
+                className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+              >
+                <div className="font-semibold text-slate-800">Caretaker</div>
+                <div className="text-[10px] text-slate-400 truncate">caretaker.kalam...</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDemoCredentials('caretaker.asima@iitp.ac.in', 'mock-staff-pass')}
+                className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+              >
+                <div className="font-semibold text-slate-800">Staff (Asima ♀)</div>
+                <div className="text-[10px] text-slate-400 truncate">asima.staff...</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDemoCredentials('tech.raj@iitp.ac.in', 'mock-staff-pass')}
+                className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+              >
+                <div className="font-semibold text-slate-800">Technician</div>
+                <div className="text-[10px] text-slate-400 truncate">tech.raj@iitp.ac.in</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDemoCredentials('warden.kalam@iitp.ac.in', 'mock-staff-pass')}
+                className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+              >
+                <div className="font-semibold text-slate-800">Warden</div>
+                <div className="text-[10px] text-slate-400 truncate">warden.kalam...</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDemoCredentials('warden.asima@iitp.ac.in', 'mock-staff-pass')}
+                className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+              >
+                <div className="font-semibold text-slate-800">Warden (Asima ♀)</div>
+                <div className="text-[10px] text-slate-400 truncate">warden.asima...</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDemoCredentials('admin@iitp.ac.in', 'mock-admin-pass')}
+                className="p-2 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+              >
+                <div className="font-semibold text-slate-800">Hostel Admin</div>
+                <div className="text-[10px] text-slate-400 truncate">admin@iitp.ac.in</div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Demo Access Modal */}
+        <DemoAccessModal
+          isOpen={isDemoModalOpen}
+          onClose={() => setIsDemoModalOpen(false)}
+          onSuccess={() => setIsDemoUnlocked(true)}
+        />
 
         {/* Public Signup Disclaimer */}
         <div className="mt-6 p-3 rounded-lg bg-amber-50 border border-amber-200/80 text-[11px] text-amber-800 flex items-start gap-2">

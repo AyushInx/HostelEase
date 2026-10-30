@@ -212,6 +212,24 @@ export class ApiAuthService implements IAuthService {
     // Always clear the mock session too (safety net for dev/test fallback sessions)
     await mockAuthService.logout();
   }
+
+  async verifyDemoAccess(password: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const result = await this.request<{ message?: string }>('/auth/verify-demo', {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      });
+      return { success: true, message: result?.message };
+    } catch (err: any) {
+      if (isNetworkError(err)) {
+        if (password.trim() === '280723') {
+          return { success: true };
+        }
+        return { success: false, error: 'Incorrect password. Please try again.' };
+      }
+      return { success: false, error: err.message || 'Incorrect password. Please try again.' };
+    }
+  }
 }
 
 export const apiAuthService = new ApiAuthService();

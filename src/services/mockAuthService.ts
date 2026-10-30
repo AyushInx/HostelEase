@@ -309,6 +309,14 @@ class MockAuthService implements IAuthService {
       message: 'Student account registered and verified successfully!',
     };
   }
+
+  async verifyDemoAccess(password: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    await this.simulateDelay(150);
+    if (password.trim() === '280723') {
+      return { success: true, message: 'Demo access granted' };
+    }
+    return { success: false, error: 'Incorrect password. Please try again.' };
+  }
 }
 
 // Export singleton instance conforming to IAuthService

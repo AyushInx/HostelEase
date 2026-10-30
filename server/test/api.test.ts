@@ -163,6 +163,24 @@ describe('Phase 4 Express REST API Endpoints', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
     });
+
+    it('verifies demo access password correctly and rejects incorrect password', async () => {
+      // Test incorrect password
+      const badRes = await post('/api/auth/verify-demo').send({
+        password: 'wrong-demo-password',
+      });
+      expect(badRes.status).toBe(401);
+      expect(badRes.body.success).toBe(false);
+      expect(badRes.body.error).toBe('Incorrect password. Please try again.');
+
+      // Test correct password '280723'
+      const goodRes = await post('/api/auth/verify-demo').send({
+        password: '280723',
+      });
+      expect(goodRes.status).toBe(200);
+      expect(goodRes.body.success).toBe(true);
+      expect(goodRes.body.message).toBe('Demo access granted');
+    });
   });
 
   // 3. Complaints Lifecycle & State Machine

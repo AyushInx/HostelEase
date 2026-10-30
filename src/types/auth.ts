@@ -50,4 +50,5 @@ export interface IAuthService {
   logout(): Promise<void>;
   sendStudentOtp?(email: string): Promise<{ success: boolean; message?: string; testOtp?: string }>;
   registerStudent?(data: RegisterStudentData): Promise<AuthResult>;
+  verifyDemoAccess?(password: string): Promise<{ success: boolean; message?: string; error?: string }>;
 }

@@ -12,6 +12,7 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   sendStudentOtp?: (email: string) => Promise<{ success: boolean; message?: string }>;
   registerStudent?: (data: RegisterStudentData) => Promise<AuthResult>;
+  verifyDemoAccess?: (password: string) => Promise<{ success: boolean; message?: string; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -74,6 +75,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return res;
   };
 
+  const verifyDemoAccess = async (password: string) => {
+    return await apiAuthService.verifyDemoAccess(password);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -85,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         sendStudentOtp,
         registerStudent,
+        verifyDemoAccess,
       }}
     >
       {children}

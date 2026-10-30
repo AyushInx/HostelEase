@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, GraduationCap, Mail, Lock, ShieldCheck, UserCheck, User, Building, KeyRound } from 'lucide-react';
+import { ArrowLeft, GraduationCap, Mail, Lock, ShieldCheck, UserCheck, User, Building, KeyRound, EyeOff } from 'lucide-react';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Alert } from '../components/common/Alert';
+import { DemoAccessModal } from '../components/common/DemoAccessModal';
 import { useAuth } from '../context/AuthContext';
 
 export const StudentLoginPage: React.FC = () => {
@@ -21,6 +22,8 @@ export const StudentLoginPage: React.FC = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDemoUnlocked, setIsDemoUnlocked] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   // Registration state
   const [regName, setRegName] = useState('');
@@ -296,32 +299,63 @@ export const StudentLoginPage: React.FC = () => {
               </Button>
             </form>
 
-            {/* Demo Auto-fill Helper */}
-            <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center gap-1.5">
-              <span className="text-[11px] text-slate-500 font-medium">Quick Demo Student Credentials:</span>
-              <div className="flex flex-wrap justify-center gap-2">
-                <Button
+            {/* Password-Protected Demo Auto-fill Helper */}
+            {!isDemoUnlocked ? (
+              <div className="mt-6 pt-4 border-t border-slate-100 flex justify-center">
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleFillDemo}
-                  leftIcon={<UserCheck className="w-3.5 h-3.5 text-indigo-600" />}
-                  className="text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                  onClick={() => setIsDemoModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:bg-slate-100/80 transition-all cursor-pointer"
                 >
-                  Auto-fill Demo Student Credentials (Alex)
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleFillDemoPriya}
-                  leftIcon={<UserCheck className="w-3.5 h-3.5 text-pink-600" />}
-                  className="text-xs text-pink-600 hover:text-pink-700 hover:bg-pink-50"
-                >
-                  Priya (Asima Hostel ♀)
-                </Button>
+                  <KeyRound className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Demo</span>
+                </button>
               </div>
-            </div>
+            ) : (
+              <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center gap-2 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between w-full px-1">
+                  <span className="text-[11px] text-slate-500 font-medium">Quick Demo Student Credentials:</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsDemoUnlocked(false)}
+                    className="text-[11px] font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors px-2 py-0.5 rounded hover:bg-slate-100"
+                    aria-label="Hide Demo Profiles"
+                  >
+                    <EyeOff className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Hide Demo</span>
+                  </button>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleFillDemo}
+                    leftIcon={<UserCheck className="w-3.5 h-3.5 text-indigo-600" />}
+                    className="text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                  >
+                    Auto-fill Demo Student Credentials (Alex)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleFillDemoPriya}
+                    leftIcon={<UserCheck className="w-3.5 h-3.5 text-pink-600" />}
+                    className="text-xs text-pink-600 hover:text-pink-700 hover:bg-pink-50"
+                  >
+                    Priya (Asima Hostel ♀)
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Demo Access Modal */}
+            <DemoAccessModal
+              isOpen={isDemoModalOpen}
+              onClose={() => setIsDemoModalOpen(false)}
+              onSuccess={() => setIsDemoUnlocked(true)}
+            />
 
             {/* Switch to Registration */}
             <div className="mt-4 text-center">

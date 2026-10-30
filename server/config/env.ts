@@ -26,6 +26,9 @@ const envSchema = z.object({
   // Keyed HMAC Secret for 6-digit OTP verification (keyed verifier invariant)
   OTP_SECRET: z.string().min(16, 'OTP_SECRET must be at least 16 characters').default('hostel_complaint_otp_hmac_secret_2026'),
   PREVIOUS_OTP_SECRET: z.string().optional(),
+
+  // Password-Protected Demo Access
+  DEMO_ACCESS_PASSWORD: z.string().default('280723'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

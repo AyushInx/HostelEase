@@ -72,18 +72,48 @@ describe('StudentLoginPage', () => {
     expect(screen.getByText(/Password must be at least 6 characters/i)).toBeInTheDocument();
   });
 
-  it('auto-fills demo student credentials', async () => {
+  it('unlocks and auto-fills demo student credentials with password protection and hide option', async () => {
     const user = userEvent.setup();
     renderStudentLoginPage();
+
+    // Verify credentials hidden by default
+    expect(screen.queryByText(/Quick Demo Student Credentials/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Auto-fill Demo Student Credentials/i })).not.toBeInTheDocument();
+
+    // Click Demo button
+    const demoBtn = screen.getByRole('button', { name: /Demo/i });
+    await user.click(demoBtn);
+
+    // Verify modal is open
+    expect(screen.getByRole('heading', { name: /Demo Access/i })).toBeInTheDocument();
+    const passwordInput = screen.getByPlaceholderText(/Enter access password/i);
+    const unlockBtn = screen.getByRole('button', { name: /^Unlock$/i });
+
+    // Enter correct password
+    await user.type(passwordInput, '280723');
+    await user.click(unlockBtn);
+
+    // Modal closes and student demo buttons appear
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Demo Access/i })).not.toBeInTheDocument();
+      expect(screen.getByText(/Quick Demo Student Credentials:/i)).toBeInTheDocument();
+    });
 
     const autoFillBtn = screen.getByRole('button', { name: /Auto-fill Demo Student Credentials/i });
     await user.click(autoFillBtn);
 
     const emailInput = screen.getByLabelText(/College Email Address/i) as HTMLInputElement;
-    const passwordInput = screen.getByLabelText(/^Password/i, { selector: 'input' }) as HTMLInputElement;
+    const formPasswordInput = screen.getByLabelText(/^Password/i, { selector: 'input' }) as HTMLInputElement;
 
     expect(emailInput.value).toBe('alex.sharma@iitp.ac.in');
-    expect(passwordInput.value).toBe('mock-student-pass');
+    expect(formPasswordInput.value).toBe('mock-student-pass');
+
+    // Test Hide Demo button
+    const hideBtn = screen.getByRole('button', { name: /Hide Demo/i });
+    await user.click(hideBtn);
+
+    expect(screen.queryByText(/Quick Demo Student Credentials:/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Demo/i })).toBeInTheDocument();
   });
 
   it('shows error on invalid student credentials', async () => {

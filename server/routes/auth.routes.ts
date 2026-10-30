@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate';
-import { loginSchema, sendOtpSchema, verifyOtpSchema } from '../schemas/auth.schema';
+import { loginSchema, sendOtpSchema, verifyOtpSchema, verifyDemoSchema } from '../schemas/auth.schema';
 import { requireAuth } from '../middleware/auth';
 import { CSRF_COOKIE_NAME } from '../middleware/csrf';
 import { otpRateLimiter, otpCooldownLimiter, verifyRateLimiter, loginRateLimiter } from '../middleware/rateLimit';
@@ -39,6 +39,13 @@ router.post(
 
 router.get('/me', requireAuth, (req, res, next) => authController.me(req, res, next));
 router.post('/logout', (req, res, next) => authController.logout(req, res, next));
+
+// Password-protected demo access verification
+router.post(
+  '/verify-demo',
+  validateRequest({ body: verifyDemoSchema }),
+  (req, res, next) => authController.verifyDemo(req, res, next)
+);
 
 export default router;
 

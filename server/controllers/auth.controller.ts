@@ -109,6 +109,27 @@ export class AuthController {
       next(err);
     }
   }
+
+  async verifyDemo(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { password } = req.body;
+      const expectedPassword = env.DEMO_ACCESS_PASSWORD || '280723';
+      if (password === expectedPassword) {
+        res.status(200).json({
+          success: true,
+          message: 'Demo access granted',
+        });
+        return;
+      }
+
+      res.status(401).json({
+        success: false,
+        error: 'Incorrect password. Please try again.',
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const authController = new AuthController();

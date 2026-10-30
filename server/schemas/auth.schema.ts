@@ -37,3 +37,7 @@ export const changeStaffRoleSchema = z.object({
   role: z.enum(['Caretaker', 'Technician', 'Warden', 'Hostel Admin']),
 });
 
+export const verifyDemoSchema = z.object({
+  password: z.string().min(1, 'Password is required'),
+});
+

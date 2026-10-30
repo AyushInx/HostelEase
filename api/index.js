@@ -25,7 +25,9 @@ var envSchema = z.object({
   EMAIL_FROM: z.string().default("HostelEase <onboarding@resend.dev>"),
   // Keyed HMAC Secret for 6-digit OTP verification (keyed verifier invariant)
   OTP_SECRET: z.string().min(16, "OTP_SECRET must be at least 16 characters").default("hostel_complaint_otp_hmac_secret_2026"),
-  PREVIOUS_OTP_SECRET: z.string().optional()
+  PREVIOUS_OTP_SECRET: z.string().optional(),
+  // Password-Protected Demo Access
+  DEMO_ACCESS_PASSWORD: z.string().default("280723")
 });
 var parsedEnv = envSchema.safeParse(process.env);
 if (!parsedEnv.success) {
@@ -1117,6 +1119,25 @@ var AuthController = class {
       next(err);
     }
   }
+  async verifyDemo(req, res, next) {
+    try {
+      const { password } = req.body;
+      const expectedPassword = env.DEMO_ACCESS_PASSWORD || "280723";
+      if (password === expectedPassword) {
+        res.status(200).json({
+          success: true,
+          message: "Demo access granted"
+        });
+        return;
+      }
+      res.status(401).json({
+        success: false,
+        error: "Incorrect password. Please try again."
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 };
 var authController = new AuthController();
 
@@ -1177,6 +1198,9 @@ var updateStudentEligibilitySchema = z2.object({
 });
 var changeStaffRoleSchema = z2.object({
   role: z2.enum(["Caretaker", "Technician", "Warden", "Hostel Admin"])
+});
+var verifyDemoSchema = z2.object({
+  password: z2.string().min(1, "Password is required")
 });
 
 // server/middleware/rateLimit.ts
@@ -1269,6 +1293,11 @@ router.post(
 );
 router.get("/me", requireAuth, (req, res, next) => authController.me(req, res, next));
 router.post("/logout", (req, res, next) => authController.logout(req, res, next));
+router.post(
+  "/verify-demo",
+  validateRequest({ body: verifyDemoSchema }),
+  (req, res, next) => authController.verifyDemo(req, res, next)
+);
 var auth_routes_default = router;
 
 // server/routes/complaint.routes.ts

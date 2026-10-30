@@ -52,18 +52,91 @@ describe('StaffLoginPage', () => {
     expect(screen.getByText(/Password is required/i)).toBeInTheDocument();
   });
 
-  it('populates fields via quick test staff profile buttons', async () => {
+  it('hides quick test staff profiles by default and displays subtle Demo button', () => {
+    renderStaffLoginPage();
+
+    // Verify profiles are completely hidden by default
+    expect(screen.queryByText(/Quick Test Staff Profiles/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Caretaker$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Technician$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Hostel Admin$/i })).not.toBeInTheDocument();
+
+    // Verify subtle Demo button is present
+    expect(screen.getByRole('button', { name: /Demo/i })).toBeInTheDocument();
+  });
+
+  it('handles demo access modal: cancel, incorrect password, and successful unlock with profile autofill and hide option', async () => {
     const user = userEvent.setup();
     renderStaffLoginPage();
 
+    const demoBtn = screen.getByRole('button', { name: /Demo/i });
+    await user.click(demoBtn);
+
+    // Verify modal opens with Title and Subtitle
+    expect(screen.getByRole('heading', { name: /Demo Access/i })).toBeInTheDocument();
+    expect(screen.getByText(/Enter the access password to continue/i)).toBeInTheDocument();
+
+    const passwordField = screen.getByPlaceholderText(/Enter access password/i);
+    const unlockBtn = screen.getByRole('button', { name: /^Unlock$/i });
+    const cancelBtn = screen.getByRole('button', { name: /^Cancel$/i });
+
+    // Test Cancel button closes modal without unlocking
+    await user.click(cancelBtn);
+    expect(screen.queryByRole('heading', { name: /Demo Access/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Quick Test Staff Profiles/i)).not.toBeInTheDocument();
+
+    // Reopen modal
+    await user.click(demoBtn);
+    const reopenPasswordField = screen.getByPlaceholderText(/Enter access password/i);
+    const reopenUnlockBtn = screen.getByRole('button', { name: /^Unlock$/i });
+
+    // Test Incorrect Password
+    await user.type(reopenPasswordField, 'invalid-pass-99');
+    await user.click(reopenUnlockBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Incorrect password\. Please try again\./i)).toBeInTheDocument();
+    });
+    // Modal stays open and profiles remain hidden
+    expect(screen.getByRole('heading', { name: /Demo Access/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Quick Test Staff Profiles/i)).not.toBeInTheDocument();
+
+    // Test Correct Password: '280723'
+    await user.clear(reopenPasswordField);
+    await user.type(reopenPasswordField, '280723');
+    await user.click(reopenUnlockBtn);
+
+    // Modal closes and profiles are revealed
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Demo Access/i })).not.toBeInTheDocument();
+      expect(screen.getByText(/Quick Test Staff Profiles:/i)).toBeInTheDocument();
+    });
+
+    // Verify all 6 profiles are visible
+    expect(screen.getByRole('button', { name: /Caretaker/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Staff \(Asima ♀\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Technician/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Warden\s+warden\.kalam/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Warden \(Asima ♀\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Hostel Admin/i })).toBeInTheDocument();
+
+    // Test autofill functionality
     const caretakerBtn = screen.getByRole('button', { name: /Caretaker/i });
     await user.click(caretakerBtn);
 
     const emailInput = screen.getByLabelText(/Staff Institutional Email/i) as HTMLInputElement;
-    const passwordInput = screen.getByLabelText(/^Password/i, { selector: 'input' }) as HTMLInputElement;
+    const staffPasswordInput = screen.getByLabelText(/^Password/i, { selector: 'input' }) as HTMLInputElement;
 
     expect(emailInput.value).toBe('caretaker.kalam@iitp.ac.in');
-    expect(passwordInput.value).toBe('mock-staff-pass');
+    expect(staffPasswordInput.value).toBe('mock-staff-pass');
+
+    // Test Closing/Hiding Demo Profiles
+    const hideBtn = screen.getByRole('button', { name: /Hide Demo/i });
+    await user.click(hideBtn);
+
+    // Demo profiles hidden again, subtle Demo button restored
+    expect(screen.queryByText(/Quick Test Staff Profiles:/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Demo/i })).toBeInTheDocument();
   });
 
   it('displays error if a student tries to authenticate via staff portal', async () => {
