@@ -234,8 +234,8 @@ export const StudentLoginPage: React.FC = () => {
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
             {isRegisterMode
-              ? 'Register with your institutional @iitp.ac.in email and verify via OTP.'
-              : 'Sign in with your institutional credentials to submit and track complaints.'}
+              ? 'Register with your institutional @iitp.ac.in email.'
+              : 'Sign in with your student credentials.'}
           </p>
         </div>
 
@@ -266,7 +266,6 @@ export const StudentLoginPage: React.FC = () => {
                   if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                 }}
                 error={errors.email}
-                helperText="Must be an institutional email address ending with @iitp.ac.in"
                 leftIcon={<Mail className="w-4 h-4" />}
                 autoComplete="email"
               />

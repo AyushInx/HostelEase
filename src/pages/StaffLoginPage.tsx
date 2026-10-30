@@ -90,7 +90,7 @@ export const StaffLoginPage: React.FC = () => {
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Staff & Operations Portal</h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Access maintenance assignments, acknowledgments, resolutions, and audit logs.
+            Sign in with your staff credentials.
           </p>
         </div>
 
@@ -117,7 +117,6 @@ export const StaffLoginPage: React.FC = () => {
               if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
             }}
             error={errors.email}
-            helperText="Official staff email assigned by administration (must end with @iitp.ac.in)"
             leftIcon={<Mail className="w-4 h-4" />}
             autoComplete="email"
           />
