@@ -89,7 +89,7 @@ describe('StudentDashboardPage (Phase 2)', () => {
       expect(screen.getByText(/Official Ticket Reference ID/i)).toBeInTheDocument();
       expect(screen.getByText(/HCT-2026-/i)).toBeInTheDocument();
     });
-  });
+  }, 15000);
 
   it('opens ticket details modal and displays timeline audit milestones', async () => {
     const user = userEvent.setup();

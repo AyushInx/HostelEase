@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Mail, Lock, AlertCircle, KeyRound, EyeOff } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Mail, Lock, KeyRound, EyeOff } from 'lucide-react';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Alert } from '../components/common/Alert';
@@ -91,18 +91,6 @@ export const StaffLoginPage: React.FC = () => {
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Staff & Operations Portal</h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
             Access maintenance assignments, acknowledgments, resolutions, and audit logs.
-          </p>
-        </div>
-
-        {/* Security Policy Notice: No Role Picker, No Public Signup */}
-        <div className="mb-5 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5">
-          <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-            <ShieldCheck className="w-4 h-4 text-indigo-600" />
-            <span>Strict Role Invariants Enforced</span>
-          </div>
-          <p className="leading-relaxed">
-            Staff roles (Caretaker, Technician, Warden, Hostel Admin) are <strong>resolved server-side</strong> upon authentication. 
-            There is <em>no client-side role picker</em>, and staff accounts cannot self-register.
           </p>
         </div>
 
@@ -255,20 +243,6 @@ export const StaffLoginPage: React.FC = () => {
           onClose={() => setIsDemoModalOpen(false)}
           onSuccess={() => setIsDemoUnlocked(true)}
         />
-
-        {/* Public Signup Disclaimer */}
-        <div className="mt-6 p-3 rounded-lg bg-amber-50 border border-amber-200/80 text-[11px] text-amber-800 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <span>
-            Staff accounts cannot be registered publicly. If you are newly appointed staff, contact your campus Hostel Administrator for provisioning.
-          </span>
-        </div>
-      </div>
-
-      {/* Security footnote */}
-      <div className="mt-4 text-center text-[11px] text-slate-500 font-medium flex items-center justify-center gap-1.5 bg-white/70 backdrop-blur-xs py-1.5 px-3 rounded-full border border-white/80 max-w-sm mx-auto shadow-2xs">
-        <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
-        <span>Protected by role-based server middleware and immutable audit logging.</span>
       </div>
     </div>
   );

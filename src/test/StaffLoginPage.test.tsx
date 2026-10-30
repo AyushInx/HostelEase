@@ -25,20 +25,16 @@ describe('StaffLoginPage', () => {
     expect(screen.getByRole('button', { name: /Authenticate Staff/i })).toBeInTheDocument();
   });
 
-  it('strictly enforces NO role picker and NO public signup', () => {
+  it('strictly enforces NO role picker and NO public signup link', () => {
     renderStaffLoginPage();
 
     // Verify there is NO select or dropdown for picking roles
     const selectElements = screen.queryAllByRole('combobox');
     expect(selectElements.length).toBe(0);
 
-    // Verify explicit disclaimer that roles are resolved server-side
-    expect(screen.getByText(/Strict Role Invariants Enforced/i)).toBeInTheDocument();
-    expect(screen.getByText(/resolved server-side/i)).toBeInTheDocument();
-    expect(screen.getByText(/no client-side role picker/i)).toBeInTheDocument();
-
-    // Verify explicit statement that staff cannot self-register
-    expect(screen.getByText(/Staff accounts cannot be registered publicly/i)).toBeInTheDocument();
+    // Verify there is no registration link or button on staff portal (staff cannot self-register)
+    expect(screen.queryByRole('link', { name: /register/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /register/i })).not.toBeInTheDocument();
   });
 
   it('validates empty inputs on submit', async () => {

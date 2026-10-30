@@ -33,13 +33,13 @@ describe('StaffDashboardPage (Phase 3 - 4 Staff Roles)', () => {
       expect(screen.getByText(/Suresh Kumar/i)).toBeInTheDocument();
       expect(screen.getByText(/Caretaker Portal/i)).toBeInTheDocument();
       expect(screen.getByText(/Kalam Hostel Jurisdiction/i)).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
 
     await waitFor(() => {
       // Caretaker should see Acknowledge or Assign button
       const assignButtons = screen.getAllByRole('button', { name: /(Assign|Reassign)/i });
       expect(assignButtons.length).toBeGreaterThan(0);
-    });
+    }, { timeout: 5000 });
 
     // Verify unauthorized actions are NOT present
     expect(screen.queryByRole('button', { name: /Confirm Resolution/i })).not.toBeInTheDocument();

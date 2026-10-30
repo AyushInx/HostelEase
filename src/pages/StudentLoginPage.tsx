@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, GraduationCap, Mail, Lock, ShieldCheck, UserCheck, User, Building, KeyRound, EyeOff } from 'lucide-react';
+import { ArrowLeft, GraduationCap, Mail, Lock, UserCheck, User, Building, KeyRound, EyeOff } from 'lucide-react';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Alert } from '../components/common/Alert';
@@ -544,12 +544,6 @@ export const StudentLoginPage: React.FC = () => {
             </div>
           </>
         )}
-      </div>
-
-      {/* Security footnote */}
-      <div className="mt-4 text-center text-[11px] text-slate-500 font-medium flex items-center justify-center gap-1.5 bg-white/70 backdrop-blur-xs py-1.5 px-3 rounded-full border border-white/80 max-w-sm mx-auto shadow-2xs">
-        <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-        <span>Protected by server-enforced institutional scoping and rate limiting.</span>
       </div>
     </div>
   );
